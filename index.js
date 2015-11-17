@@ -44606,6 +44606,7 @@ angular.module("_pages/docs/getting_started/configuration.ngt", []).run(["$templ
     "\n" +
     "<ul>\n" +
     "  <li><a ui-sref=\".({'#': 'cassandra'})\">Configuring Cassandra</a></li>\n" +
+    "  <li><a ui-sref=\".({'#': 'elasticsearch'})\">Configuring Elasticsearch</a></li>\n" +
     "  <li><a ui-sref=\".({'#': 'heroic'})\">Configuring Heroic</a></li>\n" +
     "</ul>\n" +
     "\n" +
@@ -44614,59 +44615,29 @@ angular.module("_pages/docs/getting_started/configuration.ngt", []).run(["$templ
     "</h3>\n" +
     "\n" +
     "<p>\n" +
-    "  Heroic (by default) uses the <code>heroic</code> keyspace, which has to be\n" +
-    "  configured using <code>cqlsh</code>.\n" +
+    "  Heroic (by default) uses the <code>heroic</code> keyspace, which can be\n" +
+    "  configured using the <a ui-sref=\"^.^.shell\">Heroic shell</a>.\n" +
     "</p>\n" +
     "\n" +
-    "<pre><code language=\"sql\">\n" +
-    "CREATE KEYSPACE heroic\n" +
-    "  WITH REPLICATION = {\n" +
-    "    'class': 'SimpleStrategy',\n" +
-    "    'replication_factor': 3\n" +
-    "  };\n" +
-    "\n" +
-    "CREATE TABLE heroic.metrics (\n" +
-    "  metric_key blob,\n" +
-    "  data_timestamp_offset int,\n" +
-    "  data_value double,\n" +
-    "  PRIMARY KEY(metric_key, data_timestamp_offset)\n" +
-    ") WITH COMPACT STORAGE;\n" +
+    "<pre><code language=\"bash\">\n" +
+    "tools/heroic-shell -P cassandra -X cassandra.seeds=&lt;seeds&gt; -X cassandra.configure\n" +
+    "...\n" +
+    "heroic> configure\n" +
     "</code></pre>\n" +
-    "\n" +
-    "<p>\n" +
-    "  Copy the above CQL into a file <code>heroic.cql</code> and run <code>cqlsh</code>\n" +
-    "  like the following.\n" +
-    "</p>\n" +
-    "\n" +
-    "<pre><code language=\"sql\">\n" +
-    "cqlsh < heroic.cql\n" +
-    "</code></pre>\n" +
-    "\n" +
-    "<div class=\"callout callout-danger\">\n" +
-    "  <h4>COMPACT STORAGE</h4>\n" +
-    "  <p>\n" +
-    "    The <code>COMPACT STORAGE</code> directive is required on the metrics table\n" +
-    "    since Heroic supports writing data with Thrift.\n" +
-    "    See <a href=\"http://docs.datastax.com/en/cql/3.0/cql/cql_reference/create_table_r.html?scroll=reference_ds_v3f_vfk_xj__using-compact-storage\">Datastax Documentation</a> for details.\n" +
-    "  </p>\n" +
-    "</div>\n" +
     "\n" +
     "<h3 id=\"elasticsearch\">\n" +
     "  Configuring ElasticSearch\n" +
     "</h3>\n" +
     "\n" +
     "<p>\n" +
-    "  Heroic attempts to configure ElasticSearch as soon as the service starts.\n" +
+    "  Elasticsearch is also configured using the <a ui-sref=\"^.^.shell\">Heroic shell</a>.\n" +
     "</p>\n" +
     "\n" +
-    "<p>\n" +
-    "  After the first startup the following templates should have been created.\n" +
-    "</p>\n" +
-    "\n" +
-    "<ul>\n" +
-    "  <li><b>heroic-metadata</b></li>\n" +
-    "  <li><b>heroic-suggest</b></li>\n" +
-    "</ul>\n" +
+    "<pre><code language=\"bash\">\n" +
+    "tools/heroic-shell -P elasticsearch-suggest -P elasticsearch-metadata -X elasticsearch.seeds=&lt;seeds&gt;\n" +
+    "...\n" +
+    "heroic> configure\n" +
+    "</code></pre>\n" +
     "\n" +
     "<p>\n" +
     "  Heroic suggest also requires dynamic scripting to be enabled, you do this by\n" +
@@ -44687,14 +44658,12 @@ angular.module("_pages/docs/getting_started/configuration.ngt", []).run(["$templ
     "  </p>\n" +
     "</div>\n" +
     "\n" +
-    "<h3>Configuring Heroic</h3>\n" +
+    "<h3 id=\"heroic\">Configuring Heroic</h3>\n" +
     "\n" +
     "<p>\n" +
     "  The following configuration assumes that you've managed to either download or\n" +
     "  build the heroic project.\n" +
     "</p>\n" +
-    "\n" +
-    "<p>\n" +
     "\n" +
     "<p>\n" +
     "  We will look into setting up three different <em>kinds</em> of heroic nodes,\n" +
