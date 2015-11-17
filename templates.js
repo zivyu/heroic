@@ -1185,11 +1185,11 @@ angular.module("_pages/docs/data_model.ngt", []).run(["$templateCache", function
     "  currently either a set of data points, or events.\n" +
     "</p>\n" +
     "\n" +
-    "<h3 id=\"data-points\">Data Points</h3>\n" +
+    "<h3 id=\"data-points\">Points</h3>\n" +
     "\n" +
     "<p>\n" +
     "  Java Class:\n" +
-    "  <a git-href-java=\"heroic-component\">com.spotify.heroic.metric.DataPoint</a>\n" +
+    "  <a git-href-java=\"heroic-component\">com.spotify.heroic.metric.Point</a>\n" +
     "</p>\n" +
     "\n" +
     "<p>\n" +
