@@ -89,9 +89,7 @@ angular.module("_pages/docs.ngt", []).run(["$templateCache", function($templateC
     "    </ul>\n" +
     "  </div>\n" +
     "\n" +
-    "  <div class=\"col-md-9\">\n" +
-    "    <ui-view></ui-view>\n" +
-    "  </div>\n" +
+    "  <div class=\"col-md-9\" ui-view autoscroll=\"true\"></div>\n" +
     "</div>\n" +
     "");
 }]);
@@ -99,8 +97,10 @@ angular.module("_pages/docs.ngt", []).run(["$templateCache", function($templateC
 angular.module("_pages/index.ngt", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("_pages/index.ngt",
     "<div class=\"jumbotron\">\n" +
-    "  <h1>Heroic</h1>\n" +
-    "  <p>A Scalable Time Series Database</p>\n" +
+    "  <div class=\"container\">\n" +
+    "    <h1>Heroic</h1>\n" +
+    "    <p>The Heroic Time Series Database</p>\n" +
+    "  </div>\n" +
     "</div>\n" +
     "\n" +
     "<div class=\"row\">\n" +
