@@ -414,7 +414,7 @@ angular.module("_pages/docs/api.ngt", []).run(["$templateCache", function($templ
     "  </api-response>\n" +
     "</api-endpoint>\n" +
     "\n" +
-    "<api-endpoint path=\"/query\" method=\"POST\">\n" +
+    "<api-endpoint path=\"/query/metrics\" method=\"POST\">\n" +
     "  <p>\n" +
     "    Query and aggregate metrics.\n" +
     "  </p>\n" +
@@ -541,8 +541,8 @@ angular.module("_pages/docs/api.ngt", []).run(["$templateCache", function($templ
     "        <p>Time series to write data to.</p>\n" +
     "      </api-field>\n" +
     "\n" +
-    "      <api-field name=\"data\" required=\"true\" type-array-href=\"Point\">\n" +
-    "        <p>Data to write.</p>\n" +
+    "      <api-field name=\"data\" required=\"true\" type-href=\"MetricCollection\">\n" +
+    "        <p>Collection of metrics to write.</p>\n" +
     "      </api-field>\n" +
     "    </api-type>\n" +
     "\n" +
@@ -551,7 +551,7 @@ angular.module("_pages/docs/api.ngt", []).run(["$templateCache", function($templ
     "    <codeblock language=\"json\">\n" +
     "    {\n" +
     "      \"series\": {\"key\": \"foo\", \"tags\": {\"site\": \"lon\", \"host\": \"www.example.com\"}},\n" +
-    "      \"data\": [[1300000000000, 42.0], [1300001000000, 84.0]]\n" +
+    "      \"data\": {\"type\": \"points\", \"data\": [[1300000000000, 42.0], [1300001000000, 84.0]]}\n" +
     "    }\n" +
     "    </codeblock>\n" +
     "  </api-accept>\n" +
@@ -715,6 +715,20 @@ angular.module("_pages/docs/api.ngt", []).run(["$templateCache", function($templ
     "\n" +
     "  <api-field required=\"true\" name=\"tags\" type-json='{<string>: <string>, ...}'>\n" +
     "    Tags of the series.\n" +
+    "  </api-field>\n" +
+    "</api-type>\n" +
+    "\n" +
+    "<api-type name=\"MetricCollection\">\n" +
+    "  <p>\n" +
+    "    Java Class: <a git-href-java=\"heroic-component\">com.spotify.heroic.metric.MetricCollection</a>\n" +
+    "  </p>\n" +
+    "\n" +
+    "  <api-field required=\"true\" name=\"type\" type-json='\"points\" | \"events\"'>\n" +
+    "    The type of data to write.\n" +
+    "  </api-field>\n" +
+    "\n" +
+    "  <api-field required=\"true\" name=\"data\" type-json='[Point | Event, ..]'>\n" +
+    "    The data to write. The type depends on the value of the <code language=\"json\">type</code> field.\n" +
     "  </api-field>\n" +
     "</api-type>\n" +
     "\n" +
