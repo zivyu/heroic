@@ -41754,15 +41754,15 @@ angular.module("_pages/docs.ngt", []).run(["$templateCache", function($templateC
     "\n" +
     "        <ul class=\"nav\">\n" +
     "          <li ui-sref-active=\"active\">\n" +
-    "            <a ui-sref=\"docs.getting_started.installation\">Installation</a>\n" +
+    "            <a ui-sref=\"docs.getting_started.compile\">Compile Heroic</a>\n" +
     "          </li>\n" +
     "\n" +
     "          <li ui-sref-active=\"active\">\n" +
-    "            <a ui-sref=\"docs.getting_started.compile\">Compile</a>\n" +
+    "            <a ui-sref=\"docs.getting_started.installation\">Install Dependencies</a>\n" +
     "          </li>\n" +
     "\n" +
     "          <li ui-sref-active=\"active\">\n" +
-    "            <a ui-sref=\"docs.getting_started.configuration\">Configure</a>\n" +
+    "            <a ui-sref=\"docs.getting_started.configuration\">Configure Cluster</a>\n" +
     "          </li>\n" +
     "        </ul>\n" +
     "      </li>\n" +
@@ -43083,7 +43083,8 @@ angular.module("_pages/docs/getting_started.ngt", []).run(["$templateCache", fun
     "<h2>Getting Started</h2>\n" +
     "\n" +
     "<p>\n" +
-    "This section of the documentation will cover how to <a ui-sref=\"^.installation\">install</a> and <a ui-sref=\"^.configuration\">configure</a> Heroic from nothing, to a running <em>experimental</em> system.\n" +
+    "  This section of the documentation will cover how to <a ui-sref=\"^.compile\">compile</a>, <a ui-sref=\"^.installation\">install</a>, and <a ui-sref=\"^.configuration\">configure</a> Heroic.\n" +
+    "  It will take us from nothing, to a running <em>experimental</em> system.\n" +
     "</p>\n" +
     "\n" +
     "<p>\n" +
@@ -44869,7 +44870,7 @@ angular.module("_pages/docs/config/suggest.ngt", []).run(["$templateCache", func
 
 angular.module("_pages/docs/getting_started/compile.ngt", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("_pages/docs/getting_started/compile.ngt",
-    "<h2>Compilation</h2>\n" +
+    "<h2>Compile Heroic</h2>\n" +
     "\n" +
     "<div class=\"callout callout-danger\">\n" +
     "  <h4>\n" +
@@ -44882,7 +44883,11 @@ angular.module("_pages/docs/getting_started/compile.ngt", []).run(["$templateCac
     "</div>\n" +
     "\n" +
     "<p>\n" +
-    "  Get the Heroic source from github.\n" +
+    "  In order to compile Heroic, you'll need a working <a href=\"http://www.oracle.com/technetwork/java/javase/downloads/index.html\">Java 8 JDK</a>, and <a href=\"https://maven.apache.org/\">Maven 3</a>.\n" +
+    "</p>\n" +
+    "\n" +
+    "<p>\n" +
+    "  Get the Heroic source from GitHub:\n" +
     "</p>\n" +
     "\n" +
     "<pre><code language=\"bash\">\n" +
@@ -44890,7 +44895,7 @@ angular.module("_pages/docs/getting_started/compile.ngt", []).run(["$templateCac
     "</code></pre>\n" +
     "\n" +
     "<p>\n" +
-    "  Go to the cloned directory and run maven\n" +
+    "  Go to the cloned directory and run Maven:\n" +
     "</p>\n" +
     "\n" +
     "<pre><code language=\"bash\">\n" +
@@ -44900,7 +44905,7 @@ angular.module("_pages/docs/getting_started/compile.ngt", []).run(["$templateCac
     "\n" +
     "<p>\n" +
     "  The previous command will generate a new .jar file, which you can use to run\n" +
-    "  heroic.\n" +
+    "  Heroic through <a git-href-java=\"heroic-dist\">com.spotify.heroic.HeroicService</a>.\n" +
     "</p>\n" +
     "\n" +
     "<pre><code language=\"bash\">\n" +
@@ -44911,7 +44916,13 @@ angular.module("_pages/docs/getting_started/compile.ngt", []).run(["$templateCac
 
 angular.module("_pages/docs/getting_started/configuration.ngt", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("_pages/docs/getting_started/configuration.ngt",
-    "<h2>Configuration</h2>\n" +
+    "<h2>Configure Cluster</h2>\n" +
+    "\n" +
+    "<p>\n" +
+    "  In this section we'll be configuring all the components that make up a Heroic\n" +
+    "  cluster.\n" +
+    "  These should have been installed in the <a ui-sref=\"^.installation\">previous step</a>.\n" +
+    "</p>\n" +
     "\n" +
     "<ul>\n" +
     "  <li><a ui-sref=\".({'#': 'cassandra'})\">Configuring Cassandra</a></li>\n" +
@@ -45147,7 +45158,7 @@ angular.module("_pages/docs/getting_started/configuration.ngt", []).run(["$templ
 
 angular.module("_pages/docs/getting_started/installation.ngt", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("_pages/docs/getting_started/installation.ngt",
-    "<h2>Installation</h2>\n" +
+    "<h2>Install Dependencies</h2>\n" +
     "\n" +
     "<p>\n" +
     "  For getting start, you'll need the following systems in place.\n" +
@@ -45156,7 +45167,7 @@ angular.module("_pages/docs/getting_started/installation.ngt", []).run(["$templa
     "<ul>\n" +
     "  <li><a ui-sref=\".({'#': 'cassandra'})\">A Cassandra cluster</a></li>\n" +
     "  <li><a ui-sref=\".({'#': 'elasticsearch'})\">An Elasticsearch cluster</a></li>\n" +
-    "  <li><a ui-sref=\".({'#': kafka})\">A Kafka Cluster</a></li>\n" +
+    "  <li><a ui-sref=\".({'#': 'kafka'})\">A Kafka Cluster</a></li>\n" +
     "</ul>\n" +
     "\n" +
     "<div class=\"callout callout-danger\">\n" +
