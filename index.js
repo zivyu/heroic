@@ -41831,7 +41831,7 @@ angular.module("_pages/docs.ngt", []).run(["$templateCache", function($templateC
     "    </ul>\n" +
     "  </div>\n" +
     "\n" +
-    "  <div class=\"col-md-9\" ui-view autoscroll=\"true\"></div>\n" +
+    "  <div class=\"col-md-9\" ui-view></div>\n" +
     "</div>\n" +
     "");
 }]);
@@ -46564,7 +46564,7 @@ Prism.languages.ts = {
       .state('docs.getting_started', {
         abstract: true,
         url: '/getting_started',
-        template: '<ui-view autoscroll="true"></ui-view>'
+        template: '<ui-view></ui-view>'
       })
       .state('docs.getting_started.index', {
         url: '',
@@ -46679,7 +46679,7 @@ Prism.languages.ts = {
       .state('tutorial', {
         abstract: true,
         url: '/tutorial',
-        template: '<ui-view autoscroll="true"></ui-view>'
+        template: '<ui-view></ui-view>'
       })
       .state('tutorial.index', {
         url: "/index",

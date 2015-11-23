@@ -89,7 +89,7 @@ angular.module("_pages/docs.ngt", []).run(["$templateCache", function($templateC
     "    </ul>\n" +
     "  </div>\n" +
     "\n" +
-    "  <div class=\"col-md-9\" ui-view autoscroll=\"true\"></div>\n" +
+    "  <div class=\"col-md-9\" ui-view></div>\n" +
     "</div>\n" +
     "");
 }]);
