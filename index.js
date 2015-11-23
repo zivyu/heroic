@@ -41758,11 +41758,11 @@ angular.module("_pages/docs.ngt", []).run(["$templateCache", function($templateC
     "          </li>\n" +
     "\n" +
     "          <li ui-sref-active=\"active\">\n" +
-    "            <a ui-sref=\"docs.getting_started.compile\">Compilation</a>\n" +
+    "            <a ui-sref=\"docs.getting_started.compile\">Compile</a>\n" +
     "          </li>\n" +
     "\n" +
     "          <li ui-sref-active=\"active\">\n" +
-    "            <a ui-sref=\"docs.getting_started.configuration\">Configuration</a>\n" +
+    "            <a ui-sref=\"docs.getting_started.configuration\">Configure</a>\n" +
     "          </li>\n" +
     "        </ul>\n" +
     "      </li>\n" +
