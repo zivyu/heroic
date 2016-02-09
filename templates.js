@@ -557,7 +557,7 @@ angular.module("_pages/docs/api.ngt", []).run(["$templateCache", function($templ
     "    Used for writing data into heroic directly.\n" +
     "  </p>\n" +
     "\n" +
-    "  <api-accept curl-data='{\"series\": {\"key\": \"foo\", \"tags\": {\"site\": \"lon\", \"host\": \"www.example.com\"}}, \"data\":[[1300000000000, 42.0], [1300001000000, 84.0]]}'>\n" +
+    "  <api-accept curl-data='{\"series\": {\"key\": \"foo\", \"tags\": {\"site\": \"lon\", \"host\": \"www.example.com\"}}, \"data\": {\"type\": \"points\", \"data\": [[1300000000000, 42.0], [1300001000000, 84.0]]}}'>\n" +
     "    <api-type>\n" +
     "      <api-field name=\"series\" required=\"true\" type-href=\"Series\">\n" +
     "        <p>Time series to write data to.</p>\n" +

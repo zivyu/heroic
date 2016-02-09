@@ -5857,14 +5857,12 @@ button.close {
 }
 .modal.fade .modal-dialog {
   -webkit-transform: translate(0, -25%);
-  -ms-transform: translate(0, -25%);
   transform: translate(0, -25%);
   -webkit-transition: -webkit-transform 0.3s ease-out;
   transition: transform 0.3s ease-out;
 }
 .modal.in .modal-dialog {
   -webkit-transform: translate(0, 0);
-  -ms-transform: translate(0, 0);
   transform: translate(0, 0);
 }
 .modal-open .modal {
@@ -6829,31 +6827,26 @@ button.close {
 .fa-rotate-90 {
   filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=1);
   -webkit-transform: rotate(90deg);
-  -ms-transform: rotate(90deg);
   transform: rotate(90deg);
 }
 .fa-rotate-180 {
   filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=2);
   -webkit-transform: rotate(180deg);
-  -ms-transform: rotate(180deg);
   transform: rotate(180deg);
 }
 .fa-rotate-270 {
   filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
   -webkit-transform: rotate(270deg);
-  -ms-transform: rotate(270deg);
   transform: rotate(270deg);
 }
 .fa-flip-horizontal {
   filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=0, mirror=1);
   -webkit-transform: scale(-1, 1);
-  -ms-transform: scale(-1, 1);
   transform: scale(-1, 1);
 }
 .fa-flip-vertical {
   filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1);
   -webkit-transform: scale(1, -1);
-  -ms-transform: scale(1, -1);
   transform: scale(1, -1);
 }
 :root .fa-rotate-90,
@@ -10249,6 +10242,7 @@ fieldset[disabled] .btn-yahoo.active {
 code[class*="language-"],
 pre[class*="language-"] {
 	color: #ccc;
+	background: none;
 	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
 	direction: ltr;
 	text-align: left;
@@ -10285,6 +10279,7 @@ pre[class*="language-"] {
 :not(pre) > code[class*="language-"] {
 	padding: .1em;
 	border-radius: .3em;
+	white-space: normal;
 }
 
 .token.comment,
