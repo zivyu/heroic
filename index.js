@@ -43435,9 +43435,6 @@ angular.module("_pages/docs/query_language.ngt", []).run(["$templateCache", func
     "\n" +
     "heroic> parse-query --no-indent \"average by host | sum by site\"\n" +
     "{\"aggregation\":{\"type\":\"chain\",\"chain\":[{\"type\":\"group\",\"of\":[\"host\"],\"each\":{\"type\":\"sum\"}},{\"type\":\"average\"}]}}\n" +
-    "\n" +
-    "heroic> stringify-query '{\"aggregation\":{\"type\":\"chain\",\"chain\":[{\"type\":\"group\",\"of\":[\"host\"],\"each\":{\"type\":\"sum\"}},{\"type\":\"average\"}]}}'\n" +
-    "average by host | sum by site\n" +
     "</codeblock>\n" +
     "\n" +
     "<h3>Aggregations</h3>\n" +
@@ -43492,7 +43489,7 @@ angular.module("_pages/docs/query_language.ngt", []).run(["$templateCache", func
     "  <tr>\n" +
     "    <td>\n" +
     "      <codeblock language=\"hql\">\n" +
-    "      average(5m) | sum(10m)\n" +
+    "      average(size=5m) | sum(size=10m)\n" +
     "      </codeblock>\n" +
     "    </td>\n" +
     "    <td>\n" +
