@@ -174,6 +174,7 @@ angular.module("_pages/docs/aggregations.ngt", []).run(["$templateCache", functi
     "  <li><a ui-sref=\"{'#': 'sum'}\">Sum Aggregation</a></li>\n" +
     "  <li><a ui-sref=\"{'#': 'chain'}\">Chain Aggregation</a></li>\n" +
     "  <li><a ui-sref=\"{'#': 'group'}\">Group Aggregation</a></li>\n" +
+    "  <li><a ui-sref=\"{'#': 'filtering'}\">TopK/BottomK/AboveK/BelowK Aggregation</a></li>\n" +
     "</ul>\n" +
     "\n" +
     "<h3>Size and Extent</h3>\n" +
@@ -354,6 +355,39 @@ angular.module("_pages/docs/aggregations.ngt", []).run(["$templateCache", functi
     "</p>\n" +
     "\n" +
     "<img style=\"width: 100%;\" src=\"images/aggregation_group_average.svg\"></img>\n" +
+    "\n" +
+    "<h3 id=\"filtering\">TopK/BottomK/AboveK/BelowK Aggregation</h3>\n" +
+    "\n" +
+    "<h5>JSON</h5>\n" +
+    "\n" +
+    "<codeblock language=\"json\">\n" +
+    "{\"type\": \"topk\", \"k\": &lt;number&gt;}\n" +
+    "{\"type\": \"bottomk\", \"k\": &lt;number&gt;}\n" +
+    "{\"type\": \"abovek\", \"k\": &lt;number&gt;}\n" +
+    "{\"type\": \"belowk\", \"k\": &lt;number&gt;}\n" +
+    "</codeblock>\n" +
+    "\n" +
+    "<h5>HQL</h5>\n" +
+    "\n" +
+    "<codeblock language=\"hql\">\n" +
+    "topk(&lt;number&gt;)\n" +
+    "bottomk(&lt;number&gt;)\n" +
+    "abovek(&lt;number&gt;)\n" +
+    "belowk(&lt;number&gt;)\n" +
+    "</codeblock>\n" +
+    "\n" +
+    "<p>\n" +
+    "  These are a set of filtering aggregations.\n" +
+    "  A filtering aggregation reduces the number of result groups according to some\n" +
+    "  criteria.\n" +
+    "</p>\n" +
+    "\n" +
+    "<ul>\n" +
+    "  <li>TopK - Picks the largest time series</li>\n" +
+    "  <li>BottomK - Picks the smallest time series</li>\n" +
+    "  <li>AboveK - Picks the time series that has values above the given threshold</li>\n" +
+    "  <li>BelowK - Picks the time series that has values below the given threshold</li>\n" +
+    "</ul>\n" +
     "");
 }]);
 
@@ -1568,33 +1602,62 @@ angular.module("_pages/docs/query_language.ngt", []).run(["$templateCache", func
     "\n" +
     "<p>\n" +
     "  Heroic uses a JSON-based language to define queries.\n" +
-    "  This can also be expressed using an experimental DSL.\n" +
+    "  This can also be expressed using an experimental DSL called HQL\n" +
+    "  (Heroic Query Language).\n" +
     "</p>\n" +
     "\n" +
     "<div class=\"callout callout-danger\">\n" +
     "  <h4>Experimental</h4>\n" +
     "  <p>\n" +
-    "    The DSL should currently be considered experimental and might be subject to future changes.\n" +
+    "    The HQL should currently be considered experimental and might be subject to future changes.\n" +
     "  </p>\n" +
     "</div>\n" +
     "\n" +
     "<p>\n" +
-    "  The basic structure of a query is the following SQL-like stanza.\n" +
+    "  Queries have the following structure.\n" +
     "</p>\n" +
     "\n" +
     "<codeblock language=\"hql\">\n" +
-    "&lt;aggregation&gt; from &lt;source&gt; where &lt;filter&gt;\n" +
+    "&lt;aggregation&gt;\n" +
+    "  [from &lt;source&gt;]\n" +
+    "  [where &lt;filter&gt;]\n" +
+    "  [as &lt;key&gt;=&lt;value&gt;[,&lt;key&gt;=&lt;value&gt;]]\n" +
+    "  [with &lt;key&gt;=&lt;value&gt;[,&lt;key&gt;=&lt;value&gt;]];\n" +
     "</codeblock>\n" +
     "\n" +
     "<p>\n" +
-    "  The following is a complete example for a DSL-based query:\n" +
+    "  References have the following structures.\n" +
     "</p>\n" +
     "\n" +
     "<codeblock language=\"hql\">\n" +
-    "average() by host | sum() by site from points(1d) where role=heroic and what=cpu-idle\n" +
+    "let $&lt;name&gt; = &lt;query&gt;;\n" +
     "</codeblock>\n" +
     "\n" +
-    "<h3 id=\"json-dsl\">JSON vs DSL</h3>\n" +
+    "<p>\n" +
+    "  <em>Complex Queries</em> are queries referencing other queries through a\n" +
+    "  reference.\n" +
+    "  The following is an example of this\n" +
+    "</p>\n" +
+    "\n" +
+    "<codeblock language=\"hql\">\n" +
+    "let $a = average by host | sum by site;\n" +
+    "\n" +
+    "$a / shift($a, -7d) - 1.0\n" +
+    "  where what = cpu-usage and role = heroic;\n" +
+    "</codeblock>\n" +
+    "\n" +
+    "<p>\n" +
+    "  The following is a complete example of a HQL-based query:\n" +
+    "</p>\n" +
+    "\n" +
+    "<codeblock language=\"hql\">\n" +
+    "average by host | sum by site\n" +
+    "  from points(1d)\n" +
+    "  where role=heroic and what=cpu-idle\n" +
+    "  with size=5m\n" +
+    "</codeblock>\n" +
+    "\n" +
+    "<h3 id=\"json-dsl\">JSON vs HQL</h3>\n" +
     "\n" +
     "<p>\n" +
     "  JSON is typically used when a query is built programatically because the structure is unambigious in terms of precedence and escaping.\n" +
@@ -1602,17 +1665,17 @@ angular.module("_pages/docs/query_language.ngt", []).run(["$templateCache", func
     "</p>\n" +
     "\n" +
     "<p>\n" +
-    "  The DSL was developed to make it easier for humans to express queries or filters in a manner which is more convenient.\n" +
+    "  The HQL was developed to make it easier for humans to express queries or filters in a manner which is more convenient.\n" +
     "  The language is infix, and simple strings do not have to be escaped (e.g. <code language=\"hql\">host</code> vs. <code language=\"hql\">&quot;host&quot;</code>)\n" +
     "</p>\n" +
     "\n" +
     "<p>\n" +
-    "  A primary Goal of the DSL is that it should act as a complement to the JSON queries.\n" +
-    "  Any query can be expressed either in JSON or DSL.\n" +
+    "  A primary Goal of the HQL is that it should act as a complement to the JSON queries.\n" +
+    "  Any query can be expressed either in JSON or HQL.\n" +
     "</p>\n" +
     "\n" +
     "<p>\n" +
-    "  The following is an example filter expressed both in a JSON, and in the DSL.\n" +
+    "  The following is an example filter expressed both in a JSON, and in the HQL.\n" +
     "</p>\n" +
     "\n" +
     "<pre><code language=\"hql\">\n" +
@@ -1815,7 +1878,7 @@ angular.module("_pages/docs/query_language.ngt", []).run(["$templateCache", func
     "</table>\n" +
     "</div>\n" +
     "\n" +
-    "<h3>The DSL Language</h3>\n" +
+    "<h3>The HQL Language</h3>\n" +
     "\n" +
     "<h4>Primitives</h4>\n" +
     "\n" +
@@ -3167,7 +3230,7 @@ angular.module("_pages/docs/getting_started/compile.ngt", []).run(["$templateCac
     "</p>\n" +
     "\n" +
     "<pre><code language=\"bash\">\n" +
-    "$ java -cp heroic-dist/target/heroic-dist-0.0.1-SNAPSHOT.jar com.spotify.heroic.HeroicService &lt;config&gt;\n" +
+    "$ java -cp heroic-dist/target/heroic-dist-0.0.1-SNAPSHOT-shaded.jar com.spotify.heroic.HeroicService &lt;config&gt;\n" +
     "</code></pre>\n" +
     "");
 }]);
@@ -3423,7 +3486,7 @@ angular.module("_pages/docs/getting_started/installation.ngt", []).run(["$templa
     "</p>\n" +
     "\n" +
     "<ul>\n" +
-    "  <li><a ui-sref=\".({'#': 'cassandra'})\">A Cassandra cluster</a></li>\n" +
+    "  <li><a ui-sref=\".({'#': 'cassandra'})\">A Cassandra 2.x cluster</a></li>\n" +
     "  <li><a ui-sref=\".({'#': 'elasticsearch'})\">An Elasticsearch cluster</a></li>\n" +
     "  <li><a ui-sref=\".({'#': 'kafka'})\">A Kafka Cluster</a></li>\n" +
     "</ul>\n" +
@@ -3439,7 +3502,7 @@ angular.module("_pages/docs/getting_started/installation.ngt", []).run(["$templa
     "</h3>\n" +
     "\n" +
     "<h3 id=\"cassandra\">\n" +
-    "  Cassandra\n" +
+    "  Cassandra 2.x\n" +
     "<h3>\n" +
     "\n" +
     "<h4>\n" +
@@ -3461,7 +3524,7 @@ angular.module("_pages/docs/getting_started/installation.ngt", []).run(["$templa
     "</p>\n" +
     "\n" +
     "<p>\n" +
-    "  Unpack and run (replace <code>&lt;version&gt;</code> with the actual version)\n" +
+    "  Unpack and run (replace <code>&lt;version&gt;</code> with the actual 2.x version)\n" +
     "</p>\n" +
     "\n" +
     "<pre><code language=\"bash\">tar -xvf apache-cassandra-&lt;version&gt;-bin.tar.gz\n" +
