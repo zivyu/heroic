@@ -2083,8 +2083,6 @@ angular.module("_pages/docs/shell.ngt", []).run(["$templateCache", function($tem
     "  integration/performance testing)\n" +
     "\n" +
     "  cassandra - Configures a metric backend for Cassandra\n" +
-    "    cassandra.configure\n" +
-    "        If set, will cause the cluster to be automatically configured\n" +
     "    cassandra.type=&lt;type&gt;\n" +
     "        Type of backend to use, valid values are: legacy, ng\n" +
     "    cassandra.seeds=&lt;host&gt;[:&lt;port&gt;][,..]\n" +
@@ -2244,46 +2242,6 @@ angular.module("_pages/tutorial/kafka_consumer.ngt", []).run(["$templateCache", 
     "  The above will instruct ffwd-java to send metrics to kafka, the topic will be determined (routed) to the <code>metrics-&lt;pod&gt;</code> topic, where <code>&lt;pod&gt;</code> is the <code>pod</code> attribute in the metric.\n" +
     "  A host-based partitioner by default, so metrics sent from a single given host will all end up on the same partition.\n" +
     "</p>\n" +
-    "");
-}]);
-
-angular.module("_pages/docs/api/accept-metadata-query-body.ngt", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("_pages/docs/api/accept-metadata-query-body.ngt",
-    "<api-accept curl-data='{\"filter\": [\"and\", [\"key\", \"system\"], [\"=\", \"role\", \"database\"]]}'>\n" +
-    "  <api-type>\n" +
-    "    <api-field required=\"true\" name=\"filter\" type-href=\"Filter\">\n" +
-    "      A filter to use when quering for tags.\n" +
-    "    </api-field>\n" +
-    "  </api-type>\n" +
-    "\n" +
-    "  <h4>Example Request</h4>\n" +
-    "\n" +
-    "  <codeblock language=\"json\">\n" +
-    "  {\"filter\": [\"and\", [\"key\", \"system\"], [\"=\", \"role\", \"database\"]]}\n" +
-    "  </codeblock>\n" +
-    "</api-accept>\n" +
-    "");
-}]);
-
-angular.module("_pages/docs/api/accept-series.ngt", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("_pages/docs/api/accept-series.ngt",
-    "<api-accept curl-data='{\"key\": \"foo\", \"tags\": {\"site\": \"sto\"}}'>\n" +
-    "  <api-type>\n" +
-    "    <api-field name=\"key\" type-json=\"<string>\">\n" +
-    "      The key of the series.\n" +
-    "    </api-field>\n" +
-    "\n" +
-    "    <api-field name=\"tags\" type-json=\"{<string>: <string>}\">\n" +
-    "      The tags of the series.\n" +
-    "    </api-field>\n" +
-    "  </api-type>\n" +
-    "\n" +
-    "  <h4>Example Request</h4>\n" +
-    "\n" +
-    "  <codeblock language=\"json\">\n" +
-    "  {\"key\": \"foo\", \"tags\": {\"site\": \"sto\"}}\n" +
-    "  </codeblock>\n" +
-    "</api-accept>\n" +
     "");
 }]);
 
@@ -3186,6 +3144,46 @@ angular.module("_pages/docs/config/suggest.ngt", []).run(["$templateCache", func
     "");
 }]);
 
+angular.module("_pages/docs/api/accept-metadata-query-body.ngt", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("_pages/docs/api/accept-metadata-query-body.ngt",
+    "<api-accept curl-data='{\"filter\": [\"and\", [\"key\", \"system\"], [\"=\", \"role\", \"database\"]]}'>\n" +
+    "  <api-type>\n" +
+    "    <api-field required=\"true\" name=\"filter\" type-href=\"Filter\">\n" +
+    "      A filter to use when quering for tags.\n" +
+    "    </api-field>\n" +
+    "  </api-type>\n" +
+    "\n" +
+    "  <h4>Example Request</h4>\n" +
+    "\n" +
+    "  <codeblock language=\"json\">\n" +
+    "  {\"filter\": [\"and\", [\"key\", \"system\"], [\"=\", \"role\", \"database\"]]}\n" +
+    "  </codeblock>\n" +
+    "</api-accept>\n" +
+    "");
+}]);
+
+angular.module("_pages/docs/api/accept-series.ngt", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("_pages/docs/api/accept-series.ngt",
+    "<api-accept curl-data='{\"key\": \"foo\", \"tags\": {\"site\": \"sto\"}}'>\n" +
+    "  <api-type>\n" +
+    "    <api-field name=\"key\" type-json=\"<string>\">\n" +
+    "      The key of the series.\n" +
+    "    </api-field>\n" +
+    "\n" +
+    "    <api-field name=\"tags\" type-json=\"{<string>: <string>}\">\n" +
+    "      The tags of the series.\n" +
+    "    </api-field>\n" +
+    "  </api-type>\n" +
+    "\n" +
+    "  <h4>Example Request</h4>\n" +
+    "\n" +
+    "  <codeblock language=\"json\">\n" +
+    "  {\"key\": \"foo\", \"tags\": {\"site\": \"sto\"}}\n" +
+    "  </codeblock>\n" +
+    "</api-accept>\n" +
+    "");
+}]);
+
 angular.module("_pages/docs/getting_started/compile.ngt", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("_pages/docs/getting_started/compile.ngt",
     "<h2>Compile Heroic</h2>\n" +
@@ -3258,7 +3256,7 @@ angular.module("_pages/docs/getting_started/configuration.ngt", []).run(["$templ
     "</p>\n" +
     "\n" +
     "<pre><code language=\"bash\">\n" +
-    "tools/heroic-shell -P cassandra -X cassandra.seeds=&lt;seeds&gt; -X cassandra.configure\n" +
+    "tools/heroic-shell -P cassandra -X cassandra.seeds=&lt;seeds&gt; -X datastax.configure\n" +
     "...\n" +
     "heroic> configure\n" +
     "</code></pre>\n" +
