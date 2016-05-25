@@ -43295,7 +43295,7 @@ angular.module("_pages/docs/profiles.ngt", []).run(["$templateCache", function($
     "</p>\n" +
     "\n" +
     "<codeblock language=\"bash\">\n" +
-    "tools/heroic-shell --server -P memory -X elasticsearch.configure\n" +
+    "$> tools/heroic-shell --server -P memory\n" +
     "</codeblock>\n" +
     "\n" +
     "<p>\n" +
@@ -43311,7 +43311,17 @@ angular.module("_pages/docs/profiles.ngt", []).run(["$templateCache", function($
     "<h3>Playing with the <code>memory</code> profile</h3>\n" +
     "\n" +
     "<p>\n" +
-    "  You can write some data into the the instance:\n" +
+    "  Using the <code>load-generated</code> command, you can generate some random\n" +
+    "  data for the last week to play around with.\n" +
+    "</p>\n" +
+    "\n" +
+    "<codeblock language=\"bash\">\n" +
+    "heroic&gt; load-generated\n" +
+    "...\n" +
+    "</codeblock>\n" +
+    "\n" +
+    "<p>\n" +
+    "  You can also manually write some data into the the local instance:\n" +
     "</p>\n" +
     "\n" +
     "<codeblock language=\"bash\">\n" +
@@ -43332,8 +43342,8 @@ angular.module("_pages/docs/profiles.ngt", []).run(["$templateCache", function($
     "</p>\n" +
     "\n" +
     "<codeblock language=\"bash\">\n" +
-    "heroic&gt; query average() from points(1d) where $key = test;\n" +
-    "heroic&gt; query average() from points(1d) where $key = test and what=bar;\n" +
+    "heroic&gt; query average from points(1d) where $key = test;\n" +
+    "heroic&gt; query average from points(1d) where $key = test and what=bar;\n" +
     "</codeblock>\n" +
     "");
 }]);
