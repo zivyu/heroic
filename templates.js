@@ -2312,16 +2312,16 @@ angular.module("_pages/docs/config/cluster.ngt", []).run(["$templateCache", func
     "  tags:\n" +
     "    site: london\n" +
     "  protocols:\n" +
-    "    - type: nativerpc\n" +
+    "    - type: grpc\n" +
     "  capabilities:\n" +
     "    - QUERY\n" +
     "  discovery:\n" +
     "    type: static\n" +
     "    nodes:\n" +
-    "      - \"nativerpc://heroic-stockholm-a\"\n" +
-    "      - \"nativerpc://heroic-stockholm-b\"\n" +
-    "      - \"nativerpc://heroic-london-a\"\n" +
-    "      - \"nativerpc://heroic-london-b\"\n" +
+    "      - \"grpc://heroic-stockholm-a\"\n" +
+    "      - \"grpc://heroic-stockholm-b\"\n" +
+    "      - \"grpc://heroic-london-a\"\n" +
+    "      - \"grpc://heroic-london-b\"\n" +
     "</codeblock>\n" +
     "\n" +
     "<h3 id=\"tags\"><code>tags</code></h3>\n" +
@@ -2341,6 +2341,28 @@ angular.module("_pages/docs/config/cluster.ngt", []).run(["$templateCache", func
     "\n" +
     "<p>\n" +
     "  Contains a list of protocols that this node can speak.\n" +
+    "</p>\n" +
+    "\n" +
+    "<h4>grpc</h4>\n" +
+    "\n" +
+    "<codeblock language=\"yaml\">\n" +
+    "host: &lt;host&gt;\n" +
+    "port: &lt;port&gt;\n" +
+    "</codeblock>\n" +
+    "\n" +
+    "<table class=\"table\">\n" +
+    "  <tr>\n" +
+    "    <td><code>host</code></td>\n" +
+    "    <td>the address of the interface that this node will bind to.</td>\n" +
+    "  </tr>\n" +
+    "  <tr>\n" +
+    "    <td><code>port</code></td>\n" +
+    "    <td>the port number that this node will bind to.</td>\n" +
+    "  </tr>\n" +
+    "</table>\n" +
+    "\n" +
+    "<p>\n" +
+    "    <a href=\"https://grpc.io\">gRPC</a> is an open source RPC protocol.\n" +
     "</p>\n" +
     "\n" +
     "<h4>nativerpc</h4>\n" +
@@ -3350,11 +3372,11 @@ angular.module("_pages/docs/getting_started/configuration.ngt", []).run(["$templ
     "\n" +
     "cluster:\n" +
     "  protocols:\n" +
-    "    - type: nativerpc\n" +
+    "    - type: grpc\n" +
     "  discovery:\n" +
     "    type: static\n" +
     "    nodes:\n" +
-    "      - \"nativerpc://localhost:1394\"\n" +
+    "      - \"grpc://localhost\"\n" +
     "</pre></code>\n" +
     "\n" +
     "<h4 id=\"heroic-data-node\">Data Node</h4>\n" +
@@ -3380,11 +3402,11 @@ angular.module("_pages/docs/getting_started/configuration.ngt", []).run(["$templ
     "\n" +
     "cluster:\n" +
     "  protocols:\n" +
-    "    - type: nativerpc\n" +
+    "    - type: grpc\n" +
     "  discovery:\n" +
     "    type: static\n" +
     "    nodes:\n" +
-    "      - \"nativerpc://localhost:1394\"\n" +
+    "      - \"grpc://localhost\"\n" +
     "\n" +
     "metrics:\n" +
     "  backends:\n" +
