@@ -41746,7 +41746,7 @@ angular.module("_pages/docs.ngt", []).run(["$templateCache", function($templateC
     "  <div class=\"col-md-3\">\n" +
     "    <ul class=\"nav\">\n" +
     "      <li ui-sref-active=\"active\">\n" +
-    "        <a ui-sref=\"docs.overview\">Overview</a>\n" +
+    "        <a ui-sref=\"docs.architecture\">Architecture</a>\n" +
     "      </li>\n" +
     "\n" +
     "      <li ui-sref-active=\"active\">\n" +
@@ -41754,15 +41754,15 @@ angular.module("_pages/docs.ngt", []).run(["$templateCache", function($templateC
     "\n" +
     "        <ul class=\"nav\">\n" +
     "          <li ui-sref-active=\"active\">\n" +
-    "            <a ui-sref=\"docs.getting_started.compile\">Compile Heroic</a>\n" +
+    "            <a ui-sref=\"docs.getting_started.installation\">Installation</a>\n" +
     "          </li>\n" +
     "\n" +
     "          <li ui-sref-active=\"active\">\n" +
-    "            <a ui-sref=\"docs.getting_started.installation\">Install Dependencies</a>\n" +
+    "            <a ui-sref=\"docs.getting_started.compile\">Compilation</a>\n" +
     "          </li>\n" +
     "\n" +
     "          <li ui-sref-active=\"active\">\n" +
-    "            <a ui-sref=\"docs.getting_started.configuration\">Configure Cluster</a>\n" +
+    "            <a ui-sref=\"docs.getting_started.configuration\">Configuration</a>\n" +
     "          </li>\n" +
     "        </ul>\n" +
     "      </li>\n" +
@@ -41806,7 +41806,7 @@ angular.module("_pages/docs.ngt", []).run(["$templateCache", function($templateC
     "      </li>\n" +
     "\n" +
     "      <li ui-sref-active=\"active\">\n" +
-    "        <a ui-sref=\"docs.query_language\">Query Language</a>\n" +
+    "        <a ui-sref=\"docs.filter_dsl\">Filter DSL</a>\n" +
     "      </li>\n" +
     "\n" +
     "      <li ui-sref-active=\"active\">\n" +
@@ -41847,9 +41847,9 @@ angular.module("_pages/index.ngt", []).run(["$templateCache", function($template
     "\n" +
     "<div class=\"row\">\n" +
     "  <div class=\"col-md-3\">\n" +
-    "    <h4><a ui-sref=\"docs.overview\">Overview</a></h4>\n" +
+    "    <h4><a ui-sref=\"docs.architecture\">Architecture</a></h4>\n" +
     "    <p>\n" +
-    "      Start here, the 10k overview of Heroic.\n" +
+    "      Start here, the 10k overview.\n" +
     "    </p>\n" +
     "  </div>\n" +
     "\n" +
@@ -41868,10 +41868,10 @@ angular.module("_pages/index.ngt", []).run(["$templateCache", function($template
     "  </div>\n" +
     "\n" +
     "  <div class=\"col-md-3\">\n" +
-    "    <h4><a ui-sref=\"docs.query_language\">Rich Query and Filtering Language</a></h4>\n" +
+    "    <h4><a ui-sref=\"docs.filter_dsl\">Rich Filtering</a></h4>\n" +
     "    <p>\n" +
     "      Leverage multi-dimensional time series using a comprehensive and\n" +
-    "      expressive query language.\n" +
+    "      expressive filter language.\n" +
     "    </p>\n" +
     "  </div>\n" +
     "</div>\n" +
@@ -41914,9 +41914,7 @@ angular.module("_pages/docs/aggregations.ngt", []).run(["$templateCache", functi
     "  <li><a ui-sref=\"{'#': 'max'}\">Maximum Aggregation</a></li>\n" +
     "  <li><a ui-sref=\"{'#': 'average'}\">Average Aggregation</a></li>\n" +
     "  <li><a ui-sref=\"{'#': 'sum'}\">Sum Aggregation</a></li>\n" +
-    "  <li><a ui-sref=\"{'#': 'chain'}\">Chain Aggregation</a></li>\n" +
     "  <li><a ui-sref=\"{'#': 'group'}\">Group Aggregation</a></li>\n" +
-    "  <li><a ui-sref=\"{'#': 'filtering'}\">TopK/BottomK/AboveK/BelowK Aggregation</a></li>\n" +
     "</ul>\n" +
     "\n" +
     "<h3>Size and Extent</h3>\n" +
@@ -42037,25 +42035,6 @@ angular.module("_pages/docs/aggregations.ngt", []).run(["$templateCache", functi
     "\n" +
     "<img style=\"width: 100%;\" src=\"images/aggregation_sum.svg\"></img>\n" +
     "\n" +
-    "<h3 id=\"chain\">Chain Aggregation</h3>\n" +
-    "\n" +
-    "<h5>JSON</h5>\n" +
-    "\n" +
-    "<codeblock language=\"json\">\n" +
-    "{\"type\": \"chain\", \"chain\": [&lt;aggregation&gt;, ..]}\n" +
-    "</codeblock>\n" +
-    "\n" +
-    "<h5>HQL</h5>\n" +
-    "\n" +
-    "<codeblock language=\"hql\">\n" +
-    "&lt;aggregation&gt; | ..\n" +
-    "</codeblock>\n" +
-    "\n" +
-    "<p>\n" +
-    "  A chain aggregation applies the specified aggregations in order.\n" +
-    "  The result of the first aggregation is fed into the second, and so forth.\n" +
-    "</p>\n" +
-    "\n" +
     "<h3 id=\"group\">Group Aggregation</h3>\n" +
     "\n" +
     "<h5>JSON</h5>\n" +
@@ -42067,9 +42046,7 @@ angular.module("_pages/docs/aggregations.ngt", []).run(["$templateCache", functi
     "<h5>HQL</h5>\n" +
     "\n" +
     "<codeblock language=\"hql\">\n" +
-    "&lt;aggregation&gt; by *\n" +
-    "&lt;aggregation&gt; by &lt;string&gt;\n" +
-    "&lt;aggregation&gt; by [&lt;string&gt;, ..]\n" +
+    "group(of=[&lt;string&gt;, ..], each=&lt;aggregation&gt;)\n" +
     "</codeblock>\n" +
     "\n" +
     "<h5>Description</h5>\n" +
@@ -42097,39 +42074,6 @@ angular.module("_pages/docs/aggregations.ngt", []).run(["$templateCache", functi
     "</p>\n" +
     "\n" +
     "<img style=\"width: 100%;\" src=\"images/aggregation_group_average.svg\"></img>\n" +
-    "\n" +
-    "<h3 id=\"filtering\">TopK/BottomK/AboveK/BelowK Aggregation</h3>\n" +
-    "\n" +
-    "<h5>JSON</h5>\n" +
-    "\n" +
-    "<codeblock language=\"json\">\n" +
-    "{\"type\": \"topk\", \"k\": &lt;number&gt;}\n" +
-    "{\"type\": \"bottomk\", \"k\": &lt;number&gt;}\n" +
-    "{\"type\": \"abovek\", \"k\": &lt;number&gt;}\n" +
-    "{\"type\": \"belowk\", \"k\": &lt;number&gt;}\n" +
-    "</codeblock>\n" +
-    "\n" +
-    "<h5>HQL</h5>\n" +
-    "\n" +
-    "<codeblock language=\"hql\">\n" +
-    "topk(&lt;number&gt;)\n" +
-    "bottomk(&lt;number&gt;)\n" +
-    "abovek(&lt;number&gt;)\n" +
-    "belowk(&lt;number&gt;)\n" +
-    "</codeblock>\n" +
-    "\n" +
-    "<p>\n" +
-    "  These are a set of filtering aggregations.\n" +
-    "  A filtering aggregation reduces the number of result groups according to some\n" +
-    "  criteria.\n" +
-    "</p>\n" +
-    "\n" +
-    "<ul>\n" +
-    "  <li>TopK - Picks the largest time series</li>\n" +
-    "  <li>BottomK - Picks the smallest time series</li>\n" +
-    "  <li>AboveK - Picks the time series that has values above the given threshold</li>\n" +
-    "  <li>BelowK - Picks the time series that has values below the given threshold</li>\n" +
-    "</ul>\n" +
     "");
 }]);
 
@@ -42231,7 +42175,7 @@ angular.module("_pages/docs/api.ngt", []).run(["$templateCache", function($templ
     "        </p>\n" +
     "\n" +
     "        <p>\n" +
-    "          See <a ui-sref=\"docs.query_language({'#': 'filtering'})\">filtering</a> for details on how to build a filter.\n" +
+    "          See <a ui-sref=\"docs.filter_dsl\">Filter DSL</a> for details on how to build a filter.\n" +
     "        </p>\n" +
     "      </api-field>\n" +
     "\n" +
@@ -42333,7 +42277,7 @@ angular.module("_pages/docs/api.ngt", []).run(["$templateCache", function($templ
     "    Used for writing data into heroic directly.\n" +
     "  </p>\n" +
     "\n" +
-    "  <api-accept curl-data='{\"series\": {\"key\": \"foo\", \"tags\": {\"site\": \"lon\", \"host\": \"www.example.com\"}}, \"data\": {\"type\": \"points\", \"data\": [[1300000000000, 42.0], [1300001000000, 84.0]]}}'>\n" +
+    "  <api-accept curl-data='{\"series\": {\"key\": \"foo\", \"tags\": {\"site\": \"lon\", \"host\": \"www.example.com\"}}, \"data\":[[1300000000000, 42.0], [1300001000000, 84.0]]}'>\n" +
     "    <api-type>\n" +
     "      <api-field name=\"series\" required=\"true\" type-href=\"Series\">\n" +
     "        <p>Time series to write data to.</p>\n" +
@@ -42587,7 +42531,7 @@ angular.module("_pages/docs/api.ngt", []).run(["$templateCache", function($templ
     "\n" +
     "  <p>\n" +
     "    The structure of a filter is explained in detail in\n" +
-    "    the <a ui-sref=\"docs.query_language\">Query Language</a> documentation.\n" +
+    "    the <a ui-sref=\"docs.filter_dsl\">Filter DSL</a> documentation.\n" +
     "    This will only be a brief, syntactical overview.\n" +
     "  </p>\n" +
     "\n" +
@@ -42824,6 +42768,101 @@ angular.module("_pages/docs/api.ngt", []).run(["$templateCache", function($templ
 
 angular.module("_pages/docs/architecture.ngt", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("_pages/docs/architecture.ngt",
+    "<h2>Architecture</h2>\n" +
+    "\n" +
+    "<p>\n" +
+    "  The following document will look at the architecture of a Heroic installation\n" +
+    "  at scale.\n" +
+    "</p>\n" +
+    "\n" +
+    "<p>\n" +
+    "  Heroic relies on technology which has been proved to operate at scale under\n" +
+    "  the load that we expect such a system to receive.\n" +
+    "</p>\n" +
+    "\n" +
+    "<h3>Metric Transport: Kafka</h3>\n" +
+    "\n" +
+    "<blockquote cite=\"http://kafka.apache.org/\">\n" +
+    "  <p>Kafka has a modern cluster-centric design that offers strong durability and\n" +
+    "  fault-tolerance guarantees.</p>\n" +
+    "  <footer><cite title=\"Source Title\"><a href=\"http://kafka.apache.org/\">http://kafka.apache.org/</a></cite></footer>\n" +
+    "</blockquote>\n" +
+    "\n" +
+    "<p>\n" +
+    "  We primarily use Kafka for transporting metrics of each host (or instance),\n" +
+    "  into Heroic.\n" +
+    "  This translates into Heroic being a <em>push-based</em> system.\n" +
+    "  Kafka also acts as an intermediate indirection layer, allowing you to perform\n" +
+    "  system administration tasks on the consumers without causing disruptions on\n" +
+    "  consumers.\n" +
+    "</p>\n" +
+    "\n" +
+    "<p>\n" +
+    "  Because each <em>host</em> is reponsible for transporting the metrics, heroic\n" +
+    "  does not have to perform any type of discovery, the first time a new\n" +
+    "  time-series becomes visible in the pipeline it will be registered.\n" +
+    "</p>\n" +
+    "\n" +
+    "<h3>Storage: Cassandra</h3>\n" +
+    "\n" +
+    "<p>\n" +
+    "  Metrics are stored in Cassandra, or other typical column-based databases in a\n" +
+    "  manner which avoids huge rows.\n" +
+    "  The technique used is described in <a href=\"http://www.datastax.com/dev/blog/advanced-time-series-with-cassandra\">Advanced Time Series with Cassandra</a>, and was inspired by how it's implemented in\n" +
+    "  <a href=\"http://kairosdb.github.io/\">KairosDB</a>.\n" +
+    "</p>\n" +
+    "\n" +
+    "<h3>Metadata: Elasticsearch</h3>\n" +
+    "\n" +
+    "<p>\n" +
+    "  We use Elasticsearch to store and make metadata available to a heroic\n" +
+    "  cluster. It is the primary component that drives Heroic's <a ui-sref=\"docs.filter_dsl\">filter DSL</a>.\n" +
+    "</p>\n" +
+    "\n" +
+    "<p>\n" +
+    "  Elasticsearch has proven to have fairly significant stability concerns, but\n" +
+    "  heroic uses it in a way so it acts as a non-primary storage and can rapidly be\n" +
+    "  rebuilt.\n" +
+    "</p>\n" +
+    "\n" +
+    "<p>\n" +
+    "  We also use Elasticsearch to drive <a ui-sref=\"docs.suggestions\">suggestions</a>.\n" +
+    "</p>\n" +
+    "\n" +
+    "<h3>Federation</h3>\n" +
+    "\n" +
+    "<p>\n" +
+    "  Main article: <a ui-sref=\"^.federation\">Federated Clusters</a>\n" +
+    "</p>\n" +
+    "\n" +
+    "<p>\n" +
+    "  Heroic has support for federating requests, which allows multiple independant\n" +
+    "  clusters to serve clients through a single, global interface.\n" +
+    "  This can be used to reduce the amount of geographical traffic by allowing one\n" +
+    "  cluster to operate completely within one datacenter.\n" +
+    "</p>\n" +
+    "\n" +
+    "<p>\n" +
+    "  A client querying any heroic node in a federation will cause it to fan out to\n" +
+    "  all <em>shards</em> that it knows about, process the request, and finally\n" +
+    "  merge the result for the client.\n" +
+    "</p>\n" +
+    "\n" +
+    "<img style=\"width: 100%;\" src=\"images/sharding.svg\"></img>\n" +
+    "\n" +
+    "<p>\n" +
+    "  The system tries to be as transparent as possible in the face of problems,\n" +
+    "  and for each request that fans out to a shard there is the potential that an\n" +
+    "  error prevents the result from being computed.\n" +
+    "</p>\n" +
+    "\n" +
+    "<p>\n" +
+    "  In the case of an unrecoverable error, the shards which were successfully queried will still return an result.\n" +
+    "  The fact some shard is failing will be clearly communicated in the result.\n" +
+    "  It will then be up to the client to decide how to manage that circumstance.\n" +
+    "</p>\n" +
+    "\n" +
+    "<img style=\"width: 100%;\" src=\"images/errors.svg\"></img>\n" +
     "");
 }]);
 
@@ -43065,41 +43104,17 @@ angular.module("_pages/docs/data_model.ngt", []).run(["$templateCache", function
     "");
 }]);
 
-angular.module("_pages/docs/federation-tail.ngt", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("_pages/docs/federation-tail.ngt",
-    "<p>\n" +
-    "  A client querying any heroic node in a federation will cause it to fan out to\n" +
-    "  all known <em>shards</em> and merge the result.\n" +
-    "</p>\n" +
-    "\n" +
-    "<img style=\"width: 100%;\" src=\"images/sharding.svg\"></img>\n" +
-    "\n" +
-    "<p>\n" +
-    "  Federations tries to be as transparent as possible in the face of problems.\n" +
-    "  Each request that fans out to a shard has the potential to fail, preventing that data to become unavailable.\n" +
-    "</p>\n" +
-    "\n" +
-    "<p>\n" +
-    "  In the face of errors, successful shards will be returned as normal.\n" +
-    "  The failing shards will be specifically reported as such, and it is left to\n" +
-    "  the client to decide what to do next.\n" +
-    "</p>\n" +
-    "\n" +
-    "<img style=\"width: 100%;\" src=\"images/errors.svg\"></img>\n" +
-    "");
-}]);
-
 angular.module("_pages/docs/federation.ngt", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("_pages/docs/federation.ngt",
     "<h2>Federated Clusters</h2>\n" +
     "\n" +
     "<p>\n" +
-    "  Heroic has support for federating requests, which allows multiple independent\n" +
+    "  Heroic has support for federating requests, which allows multiple independant\n" +
     "  clusters to serve clients through a single, global interface.\n" +
     "</p>\n" +
     "\n" +
     "<p>\n" +
-    "  In a federated cluster, requests are routed to <em>shards</em>, and each\n" +
+    "  In a federated cluster, requestes are routed to <em>shards</em>, and each\n" +
     "  shard is responsible for a distinct chunk of the available data.\n" +
     "  If all nodes in a single shard become unavailable, the data for that shard is\n" +
     "  unavailable.\n" +
@@ -43108,326 +43123,74 @@ angular.module("_pages/docs/federation.ngt", []).run(["$templateCache", function
     "  in the <a ui-sref=\"^.config.cluster\">cluster documentation</a>.\n" +
     "</p>\n" +
     "\n" +
-    "<ng-include src=\"'_pages/docs/federation-tail.ngt'\"></ng-include>\n" +
-    "");
-}]);
-
-angular.module("_pages/docs/getting_started.ngt", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("_pages/docs/getting_started.ngt",
-    "<h2>Getting Started</h2>\n" +
-    "\n" +
     "<p>\n" +
-    "  This section of the documentation will cover how to <a ui-sref=\"^.compile\">compile</a>, <a ui-sref=\"^.installation\">install</a>, and <a ui-sref=\"^.configuration\">configure</a> Heroic.\n" +
-    "  It will take us from nothing, to a running <em>experimental</em> system.\n" +
-    "</p>\n" +
-    "\n" +
-    "<p>\n" +
-    "  Heroic as a project is still in an <b>Alpha</b> stage, use at your own risk,\n" +
-    "  and if you find the time to, please <a git-href>contribute</a>.\n" +
-    "</p>\n" +
-    "");
-}]);
-
-angular.module("_pages/docs/index.ngt", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("_pages/docs/index.ngt",
-    "<h2>Documentation</h2>\n" +
-    "\n" +
-    "<p>\n" +
-    "  I don't know how to do index pages, just go to the <a ui-sref=\"docs.overview\">next section</a>.\n" +
-    "</p>\n" +
-    "");
-}]);
-
-angular.module("_pages/docs/overview.ngt", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("_pages/docs/overview.ngt",
-    "<h2>Overview</h2>\n" +
-    "\n" +
-    "<p>\n" +
-    "  Heroic is an open-source monitoring system originally built at\n" +
-    "  <a href=\"https://spotify.com\">Spotify</a> to address the problems that were\n" +
-    "  facing with large scale gathering and near real-time analysis of metrics.\n" +
-    "</p>\n" +
-    "\n" +
-    "<p>\n" +
-    "  Heroic's main features are:\n" +
-    "</p>\n" +
-    "\n" +
-    "<ul>\n" +
-    "  <li>An architecture that scales with you, large or small.</li>\n" +
-    "  <li>Indefinite retention, as long as you have the hardware spend.</li>\n" +
-    "  <li>A rich <a ui-sref=\"^.query_language\">query and filtering language</a>, driven by Elasticsearch.</li>\n" +
-    "  <li><a ui-sref=\"^.federation\">Federation support</a> to connect multiple Heroic clusters into a global interface.</li>\n" +
-    "</ul>\n" +
-    "\n" +
-    "<p>\n" +
-    "  Heroic uses a small set of components which are responsible for very specific things.\n" +
-    "</p>\n" +
-    "\n" +
-    "<h3>Consumers</h3>\n" +
-    "\n" +
-    "<p>\n" +
-    "  Consumers are the component responsible for <em>consuming</em> metrics.\n" +
-    "</p>\n" +
-    "\n" +
-    "<p>\n" +
-    "  We support consuming over <a ui-sref=\"^.config.consumer({'#': 'kafka'})\">Kafka</a>, the <a ui-sref=\"^.config.consumer({'#': 'collectd'})\">collectd protocol</a>, and over <a ui-sref=\"^.api({'#': 'post-write'})\">HTTP</a>.\n" +
-    "</p>\n" +
-    "\n" +
-    "<p>\n" +
-    "  Out of these options, Kafka is the preferred one since it allows for a discovery-free architecture due to it being a pub-sub system.\n" +
-    "  It has proven to be horizontally scalable and resilient towards failures.\n" +
-    "</p>\n" +
-    "\n" +
-    "<p>\n" +
-    "  The following tutorials are available for configuring consumers:\n" +
-    "</p>\n" +
-    "\n" +
-    "<ul>\n" +
-    "  <li><a ui-sref=\"tutorial.kafka_consumer\">Consuming metrics over Kafka</a></li>\n" +
-    "</ul>\n" +
-    "\n" +
-    "<h3>Metrics</h3>\n" +
-    "\n" +
-    "<p>\n" +
-    "  Metric storage is handled by Cassandra.\n" +
-    "  The technique used is described in\n" +
-    "  <a href=\"http://www.datastax.com/dev/blog/advanced-time-series-with-cassandra\">Advanced Time Series with Cassandra</a>.\n" +
-    "  It was inspired by how it's implemented in\n" +
-    "  <a href=\"http://kairosdb.github.io/\">KairosDB</a>.\n" +
-    "</p>\n" +
-    "\n" +
-    "<p>\n" +
-    "  Using Cassandra, you can store almost an indefinite amount of data as long as\n" +
-    "  you are willing to <a href=\"http://techblog.netflix.com/2011/11/benchmarking-cassandra-scalability-on.html\">spend the hardware</a> on it.\n" +
-    "  As an alternative to operating your own Cassandra cluster, we are\n" +
-    "  <a href=\"https://github.com/spotify/heroic/tree/master/metric/bigtable\">experimenting</a> with supporting\n" +
-    "  <a href=\"https://cloud.google.com/bigtable/\">Google Cloud Bigtable</a>.\n" +
-    "</p>\n" +
-    "\n" +
-    "<p>\n" +
-    "  For more information, see the section detailing how to configure <a ui-sref=\"^.config.metrics\">metrics backends</a>.\n" +
-    "</p>\n" +
-    "\n" +
-    "<h3>Metadata</h3>\n" +
-    "\n" +
-    "<p>\n" +
-    "  We use Elasticsearch to store and make metadata available to a heroic\n" +
-    "  cluster. It is the primary component that drives Heroic's <a ui-sref=\"^.query_language\">Query Language</a>.\n" +
-    "</p>\n" +
-    "\n" +
-    "<p>\n" +
-    "  Elasticsearch has been <a href=\"https://aphyr.com/posts/323-call-me-maybe-elasticsearch-1-5-0\">shown to not be reliable in terms of data safety</a>.\n" +
-    "  Because of this, Heroic uses Elasticsearch in a way so that it is not the primary storage and can rapidly be rebuilt.\n" +
-    "</p>\n" +
-    "\n" +
-    "<p>\n" +
-    "  For more information, see the section detailing how to configure <a ui-sref=\"^.config.metadata\">metadata backends</a>.\n" +
-    "</p>\n" +
-    "\n" +
-    "<h3>Suggestions</h3>\n" +
-    "\n" +
-    "<p>\n" +
-    "  When building Heroic it was quickly realized that navigating millions, or hundreads of millions of time series without context is hard.\n" +
-    "  To address this, a specialized Elasticsearch backend was built to handle <a ui-sref=\"^.config.suggest\">suggestions</a>.\n" +
-    "</p>\n" +
-    "\n" +
-    "<p>\n" +
-    "  Suggestions provide information about what tags are available for a specific context.\n" +
-    "  Assuming you are interested in which <code>what</code> tags exist for a given role, you could do the following:\n" +
-    "</p>\n" +
-    "\n" +
-    "<codeblock language=\"bash\">\n" +
-    "$ curl -H \"Content-Type: application/json\" &lt;url&gt;/metadata/suggest-tag -d \\\n" +
-    "  '{\"filter\": [\"=\", \"role\", \"heroic\"], \"key\": \"what\", \"value\": \"us\"}'\n" +
-    "</codeblock>\n" +
-    "\n" +
-    "<codeblock language=\"json\">\n" +
-    "{\n" +
-    "  \"suggestions\": [\n" +
-    "    {\"score\": \"1.0\", \"key\": \"what\", \"value\": \"cpu-usage\"},\n" +
-    "    {\"score\": \"1.0\", \"key\": \"what\", \"value\": \"disk-used-percentage\"}\n" +
-    "  ]\n" +
-    "}\n" +
-    "</codeblock>\n" +
-    "\n" +
-    "<p>\n" +
-    "  Take note on the partial matching of <code>us</code> in <code>cpu-usage</code> and <code>disk-used-percentage</code>.\n" +
-    "  This is the point of suggestions, to provide the user with the most relevant matches for a specific input.\n" +
-    "  Especially partial ones.\n" +
-    "  A typical use-case would be to fill the content of drop-down box as the user is typing.\n" +
-    "</p>\n" +
-    "\n" +
-    "<p>\n" +
-    "  Suggestions are different from Metadata since it uses more intensive indexing techniques to analyze your tags.\n" +
-    "  Having it as a separate module is useful since they are not critical to the operation of Heroic.\n" +
-    "  Or to be more specific, its <a ui-sref=\"^.query_language\">Query Language</a>.\n" +
-    "</p>\n" +
-    "\n" +
-    "<h3>Clustering and Federation</h3>\n" +
-    "\n" +
-    "<p>\n" +
-    "  Main article: <a ui-sref=\"^.federation\">Federated Clusters</a>\n" +
-    "</p>\n" +
-    "\n" +
-    "<p>\n" +
-    "  Heroic has support for federating requests, which allows multiple independent\n" +
-    "  Heroic clusters to serve clients through a single global interface.\n" +
     "  This can be used to reduce the amount of geographical traffic by allowing one\n" +
-    "  cluster to operate completely isolated within its zone.\n" +
+    "  cluster to operate completely within one datacenter.\n" +
     "</p>\n" +
     "\n" +
-    "<ng-include src=\"'_pages/docs/federation-tail.ngt'\"></ng-include>\n" +
+    "<p>\n" +
+    "  A client querying any heroic node in a federation will cause it to fan out to\n" +
+    "  all <em>shards</em> that it knows about, process the request, and finally\n" +
+    "  merge the result for the client.\n" +
+    "</p>\n" +
+    "\n" +
+    "<img style=\"width: 100%;\" src=\"images/sharding.svg\"></img>\n" +
+    "\n" +
+    "<p>\n" +
+    "  The system tries to be as transparent as possible in the face of problems,\n" +
+    "  and for each request that fans out to a shard there is the potential that an\n" +
+    "  error prevents the result from being computed.\n" +
+    "</p>\n" +
+    "\n" +
+    "<p>\n" +
+    "  In the case of an unrecoverable error, the shards which were successfully queried will still return an result.\n" +
+    "  The fact some shard is failing will be clearly communicated in the result.\n" +
+    "  It will then be up to the client to decide how to manage that circumstance.\n" +
+    "</p>\n" +
+    "\n" +
+    "<img style=\"width: 100%;\" src=\"images/errors.svg\"></img>\n" +
     "");
 }]);
 
-angular.module("_pages/docs/profiles.ngt", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("_pages/docs/profiles.ngt",
-    "<h2>Profiles</h2>\n" +
+angular.module("_pages/docs/filter_dsl.ngt", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("_pages/docs/filter_dsl.ngt",
+    "<h2>Filter DSL</h2>\n" +
     "\n" +
     "<p>\n" +
-    "  Profiles are small configuration units which can be merged into the overall\n" +
-    "  configuration.\n" +
+    "  Heroic uses a JSON-based DSL to define filters.\n" +
+    "  A filter reduces the number of selected time series, if no filter (or the <a ui-sref=\"{'#':'filter-true'}\">true filter</a>) is used, then it is implied that <em>all</em> time series in the database is selected.\n" +
+    "</p>\n" +
+    "\n" +
+    "<img style=\"width: 100%;\" src=\"images/filter-dsl.svg\"></img>\n" +
+    "\n" +
+    "<p>\n" +
+    "  This filter can either be expressed using <a ui-sref=\"{'#': 'json-dsl'}\">JSON</a>, or as\n" +
+    "  <a ui-sref=\"{'#': 'parsable-dsl'}\">a parsable DSL</a>.\n" +
+    "\n" +
+    "  Because the parsable syntax is more human friendly, examples will be written\n" +
+    "  using it, like the following.\n" +
+    "</p>\n" +
+    "\n" +
+    "<pre><code language=\"hql\">\n" +
+    "$key = \"hello kitty\" and host = foo.example.com\n" +
+    "</code></pre>\n" +
+    "\n" +
+    "<h3 id=\"json-dsl\">JSON</h3>\n" +
+    "\n" +
+    "<p>\n" +
+    "  A filter expressed as JSON a syntax tree which follows polish notation.\n" +
     "</p>\n" +
     "\n" +
     "<p>\n" +
-    "  The following is an example of starting heroic with an in-memory configuration\n" +
-    "  using the shell, and the <code>memory</code> profile:\n" +
-    "</p>\n" +
-    "\n" +
-    "<codeblock language=\"bash\">\n" +
-    "$> tools/heroic-shell --server -P memory\n" +
-    "</codeblock>\n" +
-    "\n" +
-    "<p>\n" +
-    "  A list of all available profiles and their options can be seen with the\n" +
-    "  <code>--help</code> switch.\n" +
+    "  JSON is typically used when a filter is built programatically, because the\n" +
+    "  syntax is unambigious in terms of precedence and escaping.\n" +
+    "  There is also a ton of language support for it, and it meshes well with\n" +
+    "  restful APIs.\n" +
     "</p>\n" +
     "\n" +
     "<p>\n" +
-    "  Note: <code>-X elasticsearch.configure</code> will cause the temporary\n" +
-    "  elasticsearch instances to be automatically configured.\n" +
-    "</p>\n" +
-    "\n" +
-    "<h3>Playing with the <code>memory</code> profile</h3>\n" +
-    "\n" +
-    "<p>\n" +
-    "  Using the <code>load-generated</code> command, you can generate some random\n" +
-    "  data for the last week to play around with.\n" +
-    "</p>\n" +
-    "\n" +
-    "<codeblock language=\"bash\">\n" +
-    "heroic&gt; load-generated\n" +
-    "...\n" +
-    "</codeblock>\n" +
-    "\n" +
-    "<p>\n" +
-    "  You can also manually write some data into the the local instance:\n" +
-    "</p>\n" +
-    "\n" +
-    "<codeblock language=\"bash\">\n" +
-    "heroic&gt; write --series '{\"key\": \"test\", \"tags\": {\"host\": \"a\", \"what\": \"foo\"}}' -p 00:00=1 -p 00:01=2\n" +
-    "heroic&gt; write --series '{\"key\": \"test\", \"tags\": {\"host\": \"a\", \"what\": \"bar\"}}' -p 00:00=3 -p 00:01=4\n" +
-    "</codeblock>\n" +
-    "\n" +
-    "<p>\n" +
-    "  We can fetch the data back out:\n" +
-    "</p>\n" +
-    "\n" +
-    "<codeblock language=\"bash\">\n" +
-    "heroic&gt; fetch --series '{\"key\": \"test\", \"tags\": {\"host\": \"a\", \"what\": \"bar\"}}' --start 00:00 --end 00:02\n" +
-    "</codeblock>\n" +
-    "\n" +
-    "<p>\n" +
-    "  We can also query the data:\n" +
-    "</p>\n" +
-    "\n" +
-    "<codeblock language=\"bash\">\n" +
-    "heroic&gt; query average from points(1d) where $key = test;\n" +
-    "heroic&gt; query average from points(1d) where $key = test and what=bar;\n" +
-    "</codeblock>\n" +
-    "");
-}]);
-
-angular.module("_pages/docs/query_language.ngt", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("_pages/docs/query_language.ngt",
-    "<h2>Heroic Query Language</h2>\n" +
-    "\n" +
-    "<p>\n" +
-    "  Heroic uses a JSON-based language to define queries.\n" +
-    "  This can also be expressed using an experimental DSL called HQL\n" +
-    "  (Heroic Query Language).\n" +
-    "</p>\n" +
-    "\n" +
-    "<div class=\"callout callout-danger\">\n" +
-    "  <h4>Experimental</h4>\n" +
-    "  <p>\n" +
-    "    The HQL should currently be considered experimental and might be subject to future changes.\n" +
-    "  </p>\n" +
-    "</div>\n" +
-    "\n" +
-    "<p>\n" +
-    "  Queries have the following structure.\n" +
-    "</p>\n" +
-    "\n" +
-    "<codeblock language=\"hql\">\n" +
-    "&lt;aggregation&gt;\n" +
-    "  [from &lt;source&gt;]\n" +
-    "  [where &lt;filter&gt;]\n" +
-    "  [as &lt;key&gt;=&lt;value&gt;[,&lt;key&gt;=&lt;value&gt;]]\n" +
-    "  [with &lt;key&gt;=&lt;value&gt;[,&lt;key&gt;=&lt;value&gt;]];\n" +
-    "</codeblock>\n" +
-    "\n" +
-    "<p>\n" +
-    "  References have the following structures.\n" +
-    "</p>\n" +
-    "\n" +
-    "<codeblock language=\"hql\">\n" +
-    "let $&lt;name&gt; = &lt;query&gt;;\n" +
-    "</codeblock>\n" +
-    "\n" +
-    "<p>\n" +
-    "  <em>Complex Queries</em> are queries referencing other queries through a\n" +
-    "  reference.\n" +
-    "  The following is an example of this\n" +
-    "</p>\n" +
-    "\n" +
-    "<codeblock language=\"hql\">\n" +
-    "let $a = average by host | sum by site;\n" +
-    "\n" +
-    "$a / shift($a, -7d) - 1.0\n" +
-    "  where what = cpu-usage and role = heroic;\n" +
-    "</codeblock>\n" +
-    "\n" +
-    "<p>\n" +
-    "  The following is a complete example of a HQL-based query:\n" +
-    "</p>\n" +
-    "\n" +
-    "<codeblock language=\"hql\">\n" +
-    "average by host | sum by site\n" +
-    "  from points(1d)\n" +
-    "  where role=heroic and what=cpu-idle\n" +
-    "  with size=5m\n" +
-    "</codeblock>\n" +
-    "\n" +
-    "<h3 id=\"json-dsl\">JSON vs HQL</h3>\n" +
-    "\n" +
-    "<p>\n" +
-    "  JSON is typically used when a query is built programatically because the structure is unambigious in terms of precedence and escaping.\n" +
-    "  There is also a ton of language support for it, and it meshes well with restful APIs.\n" +
-    "</p>\n" +
-    "\n" +
-    "<p>\n" +
-    "  The HQL was developed to make it easier for humans to express queries or filters in a manner which is more convenient.\n" +
-    "  The language is infix, and simple strings do not have to be escaped (e.g. <code language=\"hql\">host</code> vs. <code language=\"hql\">&quot;host&quot;</code>)\n" +
-    "</p>\n" +
-    "\n" +
-    "<p>\n" +
-    "  A primary Goal of the HQL is that it should act as a complement to the JSON queries.\n" +
-    "  Any query can be expressed either in JSON or HQL.\n" +
-    "</p>\n" +
-    "\n" +
-    "<p>\n" +
-    "  The following is an example filter expressed both in a JSON, and in the HQL.\n" +
+    "  The following is an example filter expressed both in a parsable form, and\n" +
+    "  in JSON.\n" +
     "</p>\n" +
     "\n" +
     "<pre><code language=\"hql\">\n" +
@@ -43436,96 +43199,23 @@ angular.module("_pages/docs/query_language.ngt", []).run(["$templateCache", func
     "[\"and\", [\"$key\", \"hello kitty\"], [\"=\", \"host\", \"foo.example.com\"]]\n" +
     "</code></pre>\n" +
     "\n" +
-    "<p>\n" +
-    "  To test this principle you can fire up the <a ui-sref=\"^.shell\">Heroic Shell</a> and run the following commands:\n" +
-    "</p>\n" +
-    "\n" +
-    "<codeblock language=\"bash\">\n" +
-    "$ tools/heroic-shell\n" +
-    "\n" +
-    "heroic> parse-query --no-indent \"average by host | sum by site\"\n" +
-    "{\"aggregation\":{\"type\":\"chain\",\"chain\":[{\"type\":\"group\",\"of\":[\"host\"],\"each\":{\"type\":\"sum\"}},{\"type\":\"average\"}]}}\n" +
-    "</codeblock>\n" +
-    "\n" +
-    "<h3>Aggregations</h3>\n" +
+    "<h3 id=\"parsable-dsl\">Parsable DSL</h3>\n" +
     "\n" +
     "<p>\n" +
-    "  Main Article: <a ui-sref=\"^.aggregations\">Aggregations</a>\n" +
+    "  The parsable form was developed to make it easier for humans to express\n" +
+    "  filters in a manner which is most convenient.\n" +
+    "  The language is infix, and simple strings do not have to be escaped (e.g. <code language=\"hql\">host</code> vs. <code language=\"hql\">&quot;host&quot;</code>)\n" +
     "</p>\n" +
     "\n" +
-    "<p>\n" +
-    "  Aggregations are expressed as function calls, or typed documents.\n" +
-    "  See the following example using the <a ui-sref=\"^.aggregations({'#': 'sum'})\">sum</a> aggregation.\n" +
-    "</p>\n" +
-    "\n" +
-    "<div class=\"table-responsive\">\n" +
-    "<table class=\"table table-bordered\">\n" +
-    "  <tr>\n" +
-    "    <td>\n" +
-    "      <codeblock language=\"hql\">\n" +
-    "      sum(3m)\n" +
-    "      </codeblock>\n" +
-    "    </td>\n" +
-    "    <td>\n" +
-    "      <codeblock language=\"json\">\n" +
-    "      {\"type\": \"sum\", \"size\": \"3m\"}\n" +
-    "      </codeblock>\n" +
-    "    </td>\n" +
-    "  </tr>\n" +
-    "</table>\n" +
-    "</div>\n" +
-    "\n" +
-    "<p>\n" +
-    "  There is also syntactic sugar for the special\n" +
-    "  <a ui-sref=\"^.aggregations({'#': 'group'})\">group</a> and\n" +
-    "  <a ui-sref=\"^.aggregations({'#': 'chain'})\">chain</a>\n" +
-    "  aggregations.\n" +
-    "</p>\n" +
-    "\n" +
-    "<div class=\"table-responsive\">\n" +
-    "<table class=\"table table-bordered\">\n" +
-    "  <tr>\n" +
-    "    <td>\n" +
-    "      <codeblock language=\"hql\">\n" +
-    "      empty by host\n" +
-    "      </codeblock>\n" +
-    "    </td>\n" +
-    "    <td>\n" +
-    "      <codeblock language=\"json\">\n" +
-    "      {\"type\": \"group\", \"of\": [\"host\"], \"each\": {\"type\": \"empty\"}}\n" +
-    "      </codeblock>\n" +
-    "    </td>\n" +
-    "  </tr>\n" +
-    "  <tr>\n" +
-    "    <td>\n" +
-    "      <codeblock language=\"hql\">\n" +
-    "      average(size=5m) | sum(size=10m)\n" +
-    "      </codeblock>\n" +
-    "    </td>\n" +
-    "    <td>\n" +
-    "      <codeblock language=\"json\">\n" +
-    "      {\n" +
-    "        \"type\": \"chain\",\n" +
-    "        \"chain\": [\n" +
-    "          {\"type\": \"average\", \"size\": \"5m\"},\n" +
-    "          {\"type\": \"sum\", \"size\": \"10m\"}\n" +
-    "        ]\n" +
-    "      }\n" +
-    "      </codeblock>\n" +
-    "    </td>\n" +
-    "  </tr>\n" +
-    "</table>\n" +
+    "<div class=\"callout callout-danger\">\n" +
+    "  <h4>Experimental</h4>\n" +
+    "  <p>\n" +
+    "    The parsable DSL should currently be considered experimental and might be\n" +
+    "    subject to future changes.\n" +
+    "  </p>\n" +
     "</div>\n" +
     "\n" +
     "<h3>Filters</h3>\n" +
-    "\n" +
-    "<p>\n" +
-    "  A filter reduces the number of selected time series, if no filter (or the <a ui-sref=\"{'#':'filter-true'}\">true filter</a>) is used, then it is implied that <em>all</em> time series in the database is selected.\n" +
-    "</p>\n" +
-    "\n" +
-    "<img style=\"width: 100%;\" src=\"images/filter-dsl.svg\"></img>\n" +
-    "\n" +
-    "<h3>Available Filters</h3>\n" +
     "\n" +
     "<h4>Boolean Operators</h4>\n" +
     "\n" +
@@ -43627,9 +43317,7 @@ angular.module("_pages/docs/query_language.ngt", []).run(["$templateCache", func
     "</table>\n" +
     "</div>\n" +
     "\n" +
-    "<h3>The HQL Language</h3>\n" +
-    "\n" +
-    "<h4>Primitives</h4>\n" +
+    "<h4>Parsed Primitives</h4>\n" +
     "\n" +
     "<div class=\"table-responsive\">\n" +
     "<table class=\"table table-bordered\">\n" +
@@ -43654,7 +43342,7 @@ angular.module("_pages/docs/query_language.ngt", []).run(["$templateCache", func
     "</table>\n" +
     "</div>\n" +
     "\n" +
-    "<h4>Arithmetic Expressions</h4>\n" +
+    "<h4>Parsed Arithmetic Expressions</h4>\n" +
     "\n" +
     "<div class=\"table-responsive\">\n" +
     "<table class=\"table table-bordered\">\n" +
@@ -43679,23 +43367,7 @@ angular.module("_pages/docs/query_language.ngt", []).run(["$templateCache", func
     "</table>\n" +
     "</div>\n" +
     "\n" +
-    "<h4 id=\"special-variables\">Special Variables</h4>\n" +
-    "\n" +
-    "<div class=\"table-responsive\">\n" +
-    "<table class=\"table table-bordered\">\n" +
-    "  <tr>\n" +
-    "    <td><code language=\"hql\">$key</code></td>\n" +
-    "    <td>Can be used in most places a tag is expected. It indicates that the given expression should match the special field <em>key</em> instead of a tag.</td>\n" +
-    "  </tr>\n" +
-    "\n" +
-    "  <tr>\n" +
-    "    <td><code language=\"hql\">$now</code></td>\n" +
-    "    <td>Expands to the current (server-side) timestamp in milliseconds.</td>\n" +
-    "  </tr>\n" +
-    "</table>\n" +
-    "</div>\n" +
-    "\n" +
-    "<h4 id=\"duration\">Durations</h4>\n" +
+    "<h4>Parsed Durations</h4>\n" +
     "\n" +
     "<p>\n" +
     "  Durations are represented as a numeric component with a suffix, like <code language=\"hql\">3H</code>\n" +
@@ -43724,6 +43396,105 @@ angular.module("_pages/docs/query_language.ngt", []).run(["$templateCache", func
     "\n" +
     "<codeblock language=\"hql\">\n" +
     "$now - (1d + 1H)\n" +
+    "</codeblock>\n" +
+    "\n" +
+    "<h4 id=\"parsed-keyword\">Parsed Keywords</h4>\n" +
+    "\n" +
+    "<div class=\"table-responsive\">\n" +
+    "<table class=\"table table-bordered\">\n" +
+    "  <tr>\n" +
+    "    <td><code language=\"hql\">$key</code></td>\n" +
+    "    <td>Can be used in most places a tag is expected. It indicates that the given expression should match the special field <em>key</em> instead of a tag.</td>\n" +
+    "  </tr>\n" +
+    "\n" +
+    "  <tr>\n" +
+    "    <td><code language=\"hql\">$now</code></td>\n" +
+    "    <td>Expands to the current (server-side) timestamp in milliseconds.</td>\n" +
+    "  </tr>\n" +
+    "</table>\n" +
+    "</div>\n" +
+    "");
+}]);
+
+angular.module("_pages/docs/getting_started.ngt", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("_pages/docs/getting_started.ngt",
+    "<h2>Getting Started</h2>\n" +
+    "\n" +
+    "<p>\n" +
+    "This section of the documentation will cover how to <a ui-sref=\"^.installation\">install</a> and <a ui-sref=\"^.configuration\">configure</a> Heroic from nothing, to a running <em>experimental</em> system.\n" +
+    "</p>\n" +
+    "\n" +
+    "<p>\n" +
+    "  Heroic as a project is still in an <b>Alpha</b> stage, use at your own risk,\n" +
+    "  and if you find the time to, please <a git-href>contribute</a>.\n" +
+    "</p>\n" +
+    "");
+}]);
+
+angular.module("_pages/docs/index.ngt", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("_pages/docs/index.ngt",
+    "<h2>Documentation</h2>\n" +
+    "\n" +
+    "<p>\n" +
+    "  I don't know how to do index pages, just go to the <a ui-sref=\"docs.architecture\">next section</a>.\n" +
+    "</p>\n" +
+    "");
+}]);
+
+angular.module("_pages/docs/profiles.ngt", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("_pages/docs/profiles.ngt",
+    "<h2>Profiles</h2>\n" +
+    "\n" +
+    "<p>\n" +
+    "  Profiles are small configuration units which can be merged into the overall\n" +
+    "  configuration.\n" +
+    "</p>\n" +
+    "\n" +
+    "<p>\n" +
+    "  The following is an example of starting heroic with an in-memory configuration\n" +
+    "  using the shell, and the <code>memory</code> profile:\n" +
+    "</p>\n" +
+    "\n" +
+    "<codeblock language=\"bash\">\n" +
+    "tools/heroic-shell --server -P memory -X elasticsearch.configure\n" +
+    "</codeblock>\n" +
+    "\n" +
+    "<p>\n" +
+    "  A list of all available profiles and their options can be seen with the\n" +
+    "  <code>--help</code> switch.\n" +
+    "</p>\n" +
+    "\n" +
+    "<p>\n" +
+    "  Note: <code>-X elasticsearch.configure</code> will cause the temporary\n" +
+    "  elasticsearch instances to be automatically configured.\n" +
+    "</p>\n" +
+    "\n" +
+    "<h3>Playing with the <code>memory</code> profile</h3>\n" +
+    "\n" +
+    "<p>\n" +
+    "  You can write some data into the the instance:\n" +
+    "</p>\n" +
+    "\n" +
+    "<codeblock language=\"bash\">\n" +
+    "heroic&gt; write --series '{\"key\": \"test\", \"tags\": {\"host\": \"a\", \"what\": \"foo\"}}' -p 00:00=1 -p 00:01=2\n" +
+    "heroic&gt; write --series '{\"key\": \"test\", \"tags\": {\"host\": \"a\", \"what\": \"bar\"}}' -p 00:00=3 -p 00:01=4\n" +
+    "</codeblock>\n" +
+    "\n" +
+    "<p>\n" +
+    "  We can fetch the data back out:\n" +
+    "</p>\n" +
+    "\n" +
+    "<codeblock language=\"bash\">\n" +
+    "heroic&gt; fetch --series '{\"key\": \"test\", \"tags\": {\"host\": \"a\", \"what\": \"bar\"}}' --start 00:00 --end 00:02\n" +
+    "</codeblock>\n" +
+    "\n" +
+    "<p>\n" +
+    "  We can also query the data:\n" +
+    "</p>\n" +
+    "\n" +
+    "<codeblock language=\"bash\">\n" +
+    "heroic&gt; query average() from points(1d) where $key = test;\n" +
+    "heroic&gt; query average() from points(1d) where $key = test and what=bar;\n" +
     "</codeblock>\n" +
     "");
 }]);
@@ -43835,6 +43606,8 @@ angular.module("_pages/docs/shell.ngt", []).run(["$templateCache", function($tem
     "  integration/performance testing)\n" +
     "\n" +
     "  cassandra - Configures a metric backend for Cassandra\n" +
+    "    cassandra.configure\n" +
+    "        If set, will cause the cluster to be automatically configured\n" +
     "    cassandra.type=&lt;type&gt;\n" +
     "        Type of backend to use, valid values are: legacy, ng\n" +
     "    cassandra.seeds=&lt;host&gt;[:&lt;port&gt;][,..]\n" +
@@ -43856,143 +43629,6 @@ angular.module("_pages/docs/shell.ngt", []).run(["$templateCache", function($tem
     "<p>\n" +
     "  <code language=\"bash\">--server</code> means that the shell will start heroic in server mode, which will accept http requests on port 8080.<br />\n" +
     "  <code language=\"bash\">-X configure</code> will cause all backends to be automatically configured, saving you the need to do it yourself with the <code>configure</code> task.\n" +
-    "</p>\n" +
-    "");
-}]);
-
-angular.module("_pages/tutorial/index.ngt", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("_pages/tutorial/index.ngt",
-    "<h2>Tutorials</h2>\n" +
-    "\n" +
-    "<p>\n" +
-    "  The following articles are tutorials.\n" +
-    "  They should act as a zero to complete guide of how to accomplish a certain task.\n" +
-    "</p>\n" +
-    "\n" +
-    "<p>\n" +
-    "  The following tutorials are available:\n" +
-    "</p>\n" +
-    "\n" +
-    "<ul>\n" +
-    "  <li><a ui-sref=\"^.kafka_consumer\">Consuming metrics over Kafka</a></li>\n" +
-    "</ul>\n" +
-    "");
-}]);
-
-angular.module("_pages/tutorial/kafka_consumer.ngt", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("_pages/tutorial/kafka_consumer.ngt",
-    "<h2>Consuming metrics over Kafka</h2>\n" +
-    "\n" +
-    "<blockquote cite=\"http://kafka.apache.org/\">\n" +
-    "  <p>Kafka has a modern cluster-centric design that offers strong durability and\n" +
-    "  fault-tolerance guarantees.</p>\n" +
-    "  <footer><cite title=\"Source Title\"><a href=\"http://kafka.apache.org/\">http://kafka.apache.org/</a></cite></footer>\n" +
-    "</blockquote>\n" +
-    "\n" +
-    "<p>\n" +
-    "  Kafka is an excellent choice for transporting metrics.\n" +
-    "  It's not a simple system, so you will find yourself digging through the\n" +
-    "  <a href=\"http://kafka.apache.org/documentation.html\">official documentation</a>\n" +
-    "  from time-to-time.\n" +
-    "  It is resilient towards the failure of individual nodes, and it supports\n" +
-    "  <a href=\"\">log retention</a> that could potentially give you some breathing\n" +
-    "  room in the face of problems with other components without worrying about the\n" +
-    "  permanent loss of metrics.\n" +
-    "</p>\n" +
-    "\n" +
-    "<p>\n" +
-    "  A Kafka cluster consists of the following parts:\n" +
-    "</p>\n" +
-    "\n" +
-    "<ul>\n" +
-    "  <li>A <a href=\"https://zookeeper.apache.org/\">ZooKeeper</a> cluster</li>\n" +
-    "  <li>A <a href=\"http://kafka.apache.org/\">Kafka</a> cluster</li>\n" +
-    "  <li>(Strongly Recommended) <a href=\"https://github.com/yahoo/kafka-manager\">Kafka Manager</a></li>\n" +
-    "</ul>\n" +
-    "\n" +
-    "<p>\n" +
-    "  You should follow the <a href=\"http://kafka.apache.org/documentation.html#introduction\">Kafka introduction</a> for getting started.\n" +
-    "  On top of this, it is important that you configure the <a href=\"http://kafka.apache.org/documentation.html#brokerconfigs\">num.partitions</a> option on the broker to be a larger number, like <code>100</code>.\n" +
-    "</p>\n" +
-    "\n" +
-    "<codeblock>\n" +
-    "# server.properties\n" +
-    "num.partitions=100\n" +
-    "</codeblock>\n" +
-    "\n" +
-    "<p>\n" +
-    "  The exact number is not important, but the number of partitions used for a particular topic is the limiting factor for distributing load.\n" +
-    "  So, if you have a topic with only <em>two</em> partitions, this would limit the number of active Heroic consumers you have to two as well.\n" +
-    "</p>\n" +
-    "\n" +
-    "<h3>Configuring Heroic Consumers</h3>\n" +
-    "\n" +
-    "<p>\n" +
-    "  The following is a complete example configuration for a Kafka consumer.\n" +
-    "  Take note of <code>group.id</code> below.\n" +
-    "  Two consumers belonging to the same <code>group.id</code> will balance the responsibility between them.\n" +
-    "  Therefore you can operate as many consumers as you need to support your desired throughput and redundancy with the same configuration.\n" +
-    "</p>\n" +
-    "\n" +
-    "<codeblock language=\"yaml\">\n" +
-    "# heroic.yaml\n" +
-    "\n" +
-    "port: 8080\n" +
-    "\n" +
-    "consumers:\n" +
-    "  - type: kafka\n" +
-    "    schema: com.spotify.heroic.consumer.schemas.Spotify100\n" +
-    "    topics:\n" +
-    "      - \"metrics-pod1\"\n" +
-    "    config:\n" +
-    "      group.id: heroic-consumer\n" +
-    "      zookeeper.connect: zookeeper1.example.com,zookeeper2.example.com,zookeeper3.example.com/heroic\n" +
-    "      auto.offset.reset: smallest\n" +
-    "      auto.commit.enable: true\n" +
-    "</codeblock>\n" +
-    "\n" +
-    "<p>\n" +
-    "  Using the above configuration as skeleton you need to fill in at least the <a ui-sref=\"docs.config.metrics\">metric</a>, and <a ui-sref=\"docs.config.metadata\">metadata</a> backends.\n" +
-    "  At this point, you now have a consumer configuration that can be used to spawn one or more Heroic instances faithfully consuming your metrics.\n" +
-    "</p>\n" +
-    "\n" +
-    "<h3>Configuring ffwd-java</h3>\n" +
-    "\n" +
-    "<p>\n" +
-    "  <a href=\"https://github.com/spotify/ffwd-java\">ffwd-java</a> is a metrics forwarding agent developed at Spotify.\n" +
-    "  It has first-class support for sending metrics into Kafka, and the following will detail how this is configured.\n" +
-    "</p>\n" +
-    "\n" +
-    "<p>\n" +
-    "  Kafka uses partitions to distribute load, each producer decides which partition a particular message should be sent to.\n" +
-    "  ffwd-java supports partitioning (see <a href=\"http://kafka.apache.org/documentation.html#introduction\">\"Topics and Logs\" in the Kafka documentation</a>) per-host using the following output plugin:\n" +
-    "</p>\n" +
-    "\n" +
-    "<codeblock language=\"yaml\">\n" +
-    "# ffwd.yaml\n" +
-    "\n" +
-    "attributes:\n" +
-    "  host: database.example.com\n" +
-    "  pod: pod1\n" +
-    "\n" +
-    "output:\n" +
-    "  plugins:\n" +
-    "    - type: \"kafka\"\n" +
-    "      flushInterval: 10000\n" +
-    "      serializer:\n" +
-    "        type: spotify100\n" +
-    "      router:\n" +
-    "        type: attribute\n" +
-    "        attribute: pod\n" +
-    "      producer:\n" +
-    "        metadata.broker.list: \"kafka1.example.com,kafka2.example.com,kafka3.example.com\"\n" +
-    "        request.required.acks: 1\n" +
-    "        request.timeout.ms: 1000\n" +
-    "</codeblock>\n" +
-    "\n" +
-    "<p>\n" +
-    "  The above will instruct ffwd-java to send metrics to kafka, the topic will be determined (routed) to the <code>metrics-&lt;pod&gt;</code> topic, where <code>&lt;pod&gt;</code> is the <code>pod</code> attribute in the metric.\n" +
-    "  A host-based partitioner by default, so metrics sent from a single given host will all end up on the same partition.\n" +
     "</p>\n" +
     "");
 }]);
@@ -44054,16 +43690,16 @@ angular.module("_pages/docs/config/cluster.ngt", []).run(["$templateCache", func
     "  tags:\n" +
     "    site: london\n" +
     "  protocols:\n" +
-    "    - type: grpc\n" +
+    "    - type: nativerpc\n" +
     "  capabilities:\n" +
     "    - QUERY\n" +
     "  discovery:\n" +
     "    type: static\n" +
     "    nodes:\n" +
-    "      - \"grpc://heroic-stockholm-a\"\n" +
-    "      - \"grpc://heroic-stockholm-b\"\n" +
-    "      - \"grpc://heroic-london-a\"\n" +
-    "      - \"grpc://heroic-london-b\"\n" +
+    "      - \"nativerpc://heroic-stockholm-a\"\n" +
+    "      - \"nativerpc://heroic-stockholm-b\"\n" +
+    "      - \"nativerpc://heroic-london-a\"\n" +
+    "      - \"nativerpc://heroic-london-b\"\n" +
     "</codeblock>\n" +
     "\n" +
     "<h3 id=\"tags\"><code>tags</code></h3>\n" +
@@ -44083,28 +43719,6 @@ angular.module("_pages/docs/config/cluster.ngt", []).run(["$templateCache", func
     "\n" +
     "<p>\n" +
     "  Contains a list of protocols that this node can speak.\n" +
-    "</p>\n" +
-    "\n" +
-    "<h4>grpc</h4>\n" +
-    "\n" +
-    "<codeblock language=\"yaml\">\n" +
-    "host: &lt;host&gt;\n" +
-    "port: &lt;port&gt;\n" +
-    "</codeblock>\n" +
-    "\n" +
-    "<table class=\"table\">\n" +
-    "  <tr>\n" +
-    "    <td><code>host</code></td>\n" +
-    "    <td>the address of the interface that this node will bind to.</td>\n" +
-    "  </tr>\n" +
-    "  <tr>\n" +
-    "    <td><code>port</code></td>\n" +
-    "    <td>the port number that this node will bind to.</td>\n" +
-    "  </tr>\n" +
-    "</table>\n" +
-    "\n" +
-    "<p>\n" +
-    "    <a href=\"https://grpc.io\">gRPC</a> is an open source RPC protocol.\n" +
     "</p>\n" +
     "\n" +
     "<h4>nativerpc</h4>\n" +
@@ -44562,7 +44176,7 @@ angular.module("_pages/docs/config/metadata.ngt", []).run(["$templateCache", fun
     "<h2>Configuring Metadata</h2>\n" +
     "\n" +
     "<p>\n" +
-    "  Metadata acts as the index to time series data, it is the driving force behind our <a ui-sref=\"^.^.query_language\">Query Language</a>.\n" +
+    "  Metadata acts as the index to time series data, it is the driving force behind our <a ui-sref=\"^.^.filter_dsl\">filter dsl</a>.\n" +
     "</p>\n" +
     "\n" +
     "<p>\n" +
@@ -44960,7 +44574,7 @@ angular.module("_pages/docs/config/suggest.ngt", []).run(["$templateCache", func
 
 angular.module("_pages/docs/getting_started/compile.ngt", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("_pages/docs/getting_started/compile.ngt",
-    "<h2>Compile Heroic</h2>\n" +
+    "<h2>Compilation</h2>\n" +
     "\n" +
     "<div class=\"callout callout-danger\">\n" +
     "  <h4>\n" +
@@ -44973,11 +44587,7 @@ angular.module("_pages/docs/getting_started/compile.ngt", []).run(["$templateCac
     "</div>\n" +
     "\n" +
     "<p>\n" +
-    "  In order to compile Heroic, you'll need a working <a href=\"http://www.oracle.com/technetwork/java/javase/downloads/index.html\">Java 8 JDK</a>, and <a href=\"https://maven.apache.org/\">Maven 3</a>.\n" +
-    "</p>\n" +
-    "\n" +
-    "<p>\n" +
-    "  Get the Heroic source from GitHub:\n" +
+    "  Get the Heroic source from github.\n" +
     "</p>\n" +
     "\n" +
     "<pre><code language=\"bash\">\n" +
@@ -44985,7 +44595,7 @@ angular.module("_pages/docs/getting_started/compile.ngt", []).run(["$templateCac
     "</code></pre>\n" +
     "\n" +
     "<p>\n" +
-    "  Go to the cloned directory and run Maven:\n" +
+    "  Go to the cloned directory and run maven\n" +
     "</p>\n" +
     "\n" +
     "<pre><code language=\"bash\">\n" +
@@ -44995,24 +44605,18 @@ angular.module("_pages/docs/getting_started/compile.ngt", []).run(["$templateCac
     "\n" +
     "<p>\n" +
     "  The previous command will generate a new .jar file, which you can use to run\n" +
-    "  Heroic through <a git-href-java=\"heroic-dist\">com.spotify.heroic.HeroicService</a>.\n" +
+    "  heroic.\n" +
     "</p>\n" +
     "\n" +
     "<pre><code language=\"bash\">\n" +
-    "$ java -cp heroic-dist/target/heroic-dist-0.0.1-SNAPSHOT-shaded.jar com.spotify.heroic.HeroicService &lt;config&gt;\n" +
+    "$ java -cp heroic-dist/target/heroic-dist-0.0.1-SNAPSHOT.jar com.spotify.heroic.HeroicService &lt;config&gt;\n" +
     "</code></pre>\n" +
     "");
 }]);
 
 angular.module("_pages/docs/getting_started/configuration.ngt", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("_pages/docs/getting_started/configuration.ngt",
-    "<h2>Configure Cluster</h2>\n" +
-    "\n" +
-    "<p>\n" +
-    "  In this section we'll be configuring all the components that make up a Heroic\n" +
-    "  cluster.\n" +
-    "  These should have been installed in the <a ui-sref=\"^.installation\">previous step</a>.\n" +
-    "</p>\n" +
+    "<h2>Configuration</h2>\n" +
     "\n" +
     "<ul>\n" +
     "  <li><a ui-sref=\".({'#': 'cassandra'})\">Configuring Cassandra</a></li>\n" +
@@ -45030,7 +44634,7 @@ angular.module("_pages/docs/getting_started/configuration.ngt", []).run(["$templ
     "</p>\n" +
     "\n" +
     "<pre><code language=\"bash\">\n" +
-    "tools/heroic-shell -P cassandra -X cassandra.seeds=&lt;seeds&gt; -X datastax.configure\n" +
+    "tools/heroic-shell -P cassandra -X cassandra.seeds=&lt;seeds&gt; -X cassandra.configure\n" +
     "...\n" +
     "heroic> configure\n" +
     "</code></pre>\n" +
@@ -45114,11 +44718,11 @@ angular.module("_pages/docs/getting_started/configuration.ngt", []).run(["$templ
     "\n" +
     "cluster:\n" +
     "  protocols:\n" +
-    "    - type: grpc\n" +
+    "    - type: nativerpc\n" +
     "  discovery:\n" +
     "    type: static\n" +
     "    nodes:\n" +
-    "      - \"grpc://localhost\"\n" +
+    "      - \"nativerpc://localhost:1394\"\n" +
     "</pre></code>\n" +
     "\n" +
     "<h4 id=\"heroic-data-node\">Data Node</h4>\n" +
@@ -45144,11 +44748,11 @@ angular.module("_pages/docs/getting_started/configuration.ngt", []).run(["$templ
     "\n" +
     "cluster:\n" +
     "  protocols:\n" +
-    "    - type: grpc\n" +
+    "    - type: nativerpc\n" +
     "  discovery:\n" +
     "    type: static\n" +
     "    nodes:\n" +
-    "      - \"grpc://localhost\"\n" +
+    "      - \"nativerpc://localhost:1394\"\n" +
     "\n" +
     "metrics:\n" +
     "  backends:\n" +
@@ -45248,16 +44852,16 @@ angular.module("_pages/docs/getting_started/configuration.ngt", []).run(["$templ
 
 angular.module("_pages/docs/getting_started/installation.ngt", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("_pages/docs/getting_started/installation.ngt",
-    "<h2>Install Dependencies</h2>\n" +
+    "<h2>Installation</h2>\n" +
     "\n" +
     "<p>\n" +
     "  For getting start, you'll need the following systems in place.\n" +
     "</p>\n" +
     "\n" +
     "<ul>\n" +
-    "  <li><a ui-sref=\".({'#': 'cassandra'})\">A Cassandra 2.x cluster</a></li>\n" +
+    "  <li><a ui-sref=\".({'#': 'cassandra'})\">A Cassandra cluster</a></li>\n" +
     "  <li><a ui-sref=\".({'#': 'elasticsearch'})\">An Elasticsearch cluster</a></li>\n" +
-    "  <li><a ui-sref=\".({'#': 'kafka'})\">A Kafka Cluster</a></li>\n" +
+    "  <li><a ui-sref=\".({'#': kafka})\">A Kafka Cluster</a></li>\n" +
     "</ul>\n" +
     "\n" +
     "<div class=\"callout callout-danger\">\n" +
@@ -45271,7 +44875,7 @@ angular.module("_pages/docs/getting_started/installation.ngt", []).run(["$templa
     "</h3>\n" +
     "\n" +
     "<h3 id=\"cassandra\">\n" +
-    "  Cassandra 2.x\n" +
+    "  Cassandra\n" +
     "<h3>\n" +
     "\n" +
     "<h4>\n" +
@@ -45293,7 +44897,7 @@ angular.module("_pages/docs/getting_started/installation.ngt", []).run(["$templa
     "</p>\n" +
     "\n" +
     "<p>\n" +
-    "  Unpack and run (replace <code>&lt;version&gt;</code> with the actual 2.x version)\n" +
+    "  Unpack and run (replace <code>&lt;version&gt;</code> with the actual version)\n" +
     "</p>\n" +
     "\n" +
     "<pre><code language=\"bash\">tar -xvf apache-cassandra-&lt;version&gt;-bin.tar.gz\n" +
@@ -45674,7 +45278,7 @@ var _ = _self.Prism = {
 		}
 
 		if (parent) {
-			language = (parent.className.match(lang) || [,''])[1];
+			language = (parent.className.match(lang) || [,''])[1].toLowerCase();
 			grammar = _.languages[language];
 		}
 
@@ -45975,7 +45579,12 @@ if (script) {
 	_.filename = script.src;
 
 	if (document.addEventListener && !script.hasAttribute('data-manual')) {
-		document.addEventListener('DOMContentLoaded', _.highlightAll);
+		if(document.readyState !== "loading") {
+			requestAnimationFrame(_.highlightAll, 0);
+		}
+		else {
+			document.addEventListener('DOMContentLoaded', _.highlightAll);
+		}
 	}
 }
 
@@ -46152,7 +45761,7 @@ Prism.languages.insertBefore('javascript', 'keyword', {
 	}
 });
 
-Prism.languages.insertBefore('javascript', 'class-name', {
+Prism.languages.insertBefore('javascript', 'string', {
 	'template-string': {
 		pattern: /`(?:\\\\|\\?[^\\])*?`/,
 		greedy: true,
@@ -46395,7 +46004,7 @@ if (Prism.languages.markup) {
 		}
 	}, Prism.languages.markup.tag);
 }
-Prism.languages.sql= { 
+Prism.languages.sql= {
 	'comment': {
 		pattern: /(^|[^\\])(?:\/\*[\w\W]*?\*\/|(?:--|\/\/|#).*)/,
 		lookbehind: true
@@ -46406,7 +46015,7 @@ Prism.languages.sql= {
 	},
 	'variable': /@[\w.$]+|@("|'|`)(?:\\?[\s\S])+?\1/,
 	'function': /\b(?:COUNT|SUM|AVG|MIN|MAX|FIRST|LAST|UCASE|LCASE|MID|LEN|ROUND|NOW|FORMAT)(?=\s*\()/i, // Should we highlight user defined functions too?
-	'keyword': /\b(?:ACTION|ADD|AFTER|ALGORITHM|ALL|ALTER|ANALYZE|ANY|APPLY|AS|ASC|AUTHORIZATION|BACKUP|BDB|BEGIN|BERKELEYDB|BIGINT|BINARY|BIT|BLOB|BOOL|BOOLEAN|BREAK|BROWSE|BTREE|BULK|BY|CALL|CASCADED?|CASE|CHAIN|CHAR VARYING|CHARACTER (?:SET|VARYING)|CHARSET|CHECK|CHECKPOINT|CLOSE|CLUSTERED|COALESCE|COLLATE|COLUMN|COLUMNS|COMMENT|COMMIT|COMMITTED|COMPUTE|CONNECT|CONSISTENT|CONSTRAINT|CONTAINS|CONTAINSTABLE|CONTINUE|CONVERT|CREATE|CROSS|CURRENT(?:_DATE|_TIME|_TIMESTAMP|_USER)?|CURSOR|DATA(?:BASES?)?|DATETIME|DBCC|DEALLOCATE|DEC|DECIMAL|DECLARE|DEFAULT|DEFINER|DELAYED|DELETE|DENY|DESC|DESCRIBE|DETERMINISTIC|DISABLE|DISCARD|DISK|DISTINCT|DISTINCTROW|DISTRIBUTED|DO|DOUBLE(?: PRECISION)?|DROP|DUMMY|DUMP(?:FILE)?|DUPLICATE KEY|ELSE|ENABLE|ENCLOSED BY|END|ENGINE|ENUM|ERRLVL|ERRORS|ESCAPE(?:D BY)?|EXCEPT|EXEC(?:UTE)?|EXISTS|EXIT|EXPLAIN|EXTENDED|FETCH|FIELDS|FILE|FILLFACTOR|FIRST|FIXED|FLOAT|FOLLOWING|FOR(?: EACH ROW)?|FORCE|FOREIGN|FREETEXT(?:TABLE)?|FROM|FULL|FUNCTION|GEOMETRY(?:COLLECTION)?|GLOBAL|GOTO|GRANT|GROUP|HANDLER|HASH|HAVING|HOLDLOCK|IDENTITY(?:_INSERT|COL)?|IF|IGNORE|IMPORT|INDEX|INFILE|INNER|INNODB|INOUT|INSERT|INT|INTEGER|INTERSECT|INTO|INVOKER|ISOLATION LEVEL|JOIN|KEYS?|KILL|LANGUAGE SQL|LAST|LEFT|LIMIT|LINENO|LINES|LINESTRING|LOAD|LOCAL|LOCK|LONG(?:BLOB|TEXT)|MATCH(?:ED)?|MEDIUM(?:BLOB|INT|TEXT)|MERGE|MIDDLEINT|MODIFIES SQL DATA|MODIFY|MULTI(?:LINESTRING|POINT|POLYGON)|NATIONAL(?: CHAR VARYING| CHARACTER(?: VARYING)?| VARCHAR)?|NATURAL|NCHAR(?: VARCHAR)?|NEXT|NO(?: SQL|CHECK|CYCLE)?|NONCLUSTERED|NULLIF|NUMERIC|OFF?|OFFSETS?|ON|OPEN(?:DATASOURCE|QUERY|ROWSET)?|OPTIMIZE|OPTION(?:ALLY)?|ORDER|OUT(?:ER|FILE)?|OVER|PARTIAL|PARTITION|PERCENT|PIVOT|PLAN|POINT|POLYGON|PRECEDING|PRECISION|PREV|PRIMARY|PRINT|PRIVILEGES|PROC(?:EDURE)?|PUBLIC|PURGE|QUICK|RAISERROR|READ(?:S SQL DATA|TEXT)?|REAL|RECONFIGURE|REFERENCES|RELEASE|RENAME|REPEATABLE|REPLICATION|REQUIRE|RESTORE|RESTRICT|RETURNS?|REVOKE|RIGHT|ROLLBACK|ROUTINE|ROW(?:COUNT|GUIDCOL|S)?|RTREE|RULE|SAVE(?:POINT)?|SCHEMA|SELECT|SERIAL(?:IZABLE)?|SESSION(?:_USER)?|SET(?:USER)?|SHARE MODE|SHOW|SHUTDOWN|SIMPLE|SMALLINT|SNAPSHOT|SOME|SONAME|START(?:ING BY)?|STATISTICS|STATUS|STRIPED|SYSTEM_USER|TABLES?|TABLESPACE|TEMP(?:ORARY|TABLE)?|TERMINATED BY|TEXT(?:SIZE)?|THEN|TIMESTAMP|TINY(?:BLOB|INT|TEXT)|TOP?|TRAN(?:SACTIONS?)?|TRIGGER|TRUNCATE|TSEQUAL|TYPES?|UNBOUNDED|UNCOMMITTED|UNDEFINED|UNION|UNIQUE|UNPIVOT|UPDATE(?:TEXT)?|USAGE|USE|USER|USING|VALUES?|VAR(?:BINARY|CHAR|CHARACTER|YING)|VIEW|WAITFOR|WARNINGS|WHEN|WHERE|WHILE|WITH(?: ROLLUP|IN)?|WORK|WRITE(?:TEXT)?)\b/i,
+	'keyword': /\b(?:ACTION|ADD|AFTER|ALGORITHM|ALL|ALTER|ANALYZE|ANY|APPLY|AS|ASC|AUTHORIZATION|AUTO_INCREMENT|BACKUP|BDB|BEGIN|BERKELEYDB|BIGINT|BINARY|BIT|BLOB|BOOL|BOOLEAN|BREAK|BROWSE|BTREE|BULK|BY|CALL|CASCADED?|CASE|CHAIN|CHAR VARYING|CHARACTER (?:SET|VARYING)|CHARSET|CHECK|CHECKPOINT|CLOSE|CLUSTERED|COALESCE|COLLATE|COLUMN|COLUMNS|COMMENT|COMMIT|COMMITTED|COMPUTE|CONNECT|CONSISTENT|CONSTRAINT|CONTAINS|CONTAINSTABLE|CONTINUE|CONVERT|CREATE|CROSS|CURRENT(?:_DATE|_TIME|_TIMESTAMP|_USER)?|CURSOR|DATA(?:BASES?)?|DATE(?:TIME)?|DBCC|DEALLOCATE|DEC|DECIMAL|DECLARE|DEFAULT|DEFINER|DELAYED|DELETE|DELIMITER(?:S)?|DENY|DESC|DESCRIBE|DETERMINISTIC|DISABLE|DISCARD|DISK|DISTINCT|DISTINCTROW|DISTRIBUTED|DO|DOUBLE(?: PRECISION)?|DROP|DUMMY|DUMP(?:FILE)?|DUPLICATE KEY|ELSE|ENABLE|ENCLOSED BY|END|ENGINE|ENUM|ERRLVL|ERRORS|ESCAPE(?:D BY)?|EXCEPT|EXEC(?:UTE)?|EXISTS|EXIT|EXPLAIN|EXTENDED|FETCH|FIELDS|FILE|FILLFACTOR|FIRST|FIXED|FLOAT|FOLLOWING|FOR(?: EACH ROW)?|FORCE|FOREIGN|FREETEXT(?:TABLE)?|FROM|FULL|FUNCTION|GEOMETRY(?:COLLECTION)?|GLOBAL|GOTO|GRANT|GROUP|HANDLER|HASH|HAVING|HOLDLOCK|IDENTITY(?:_INSERT|COL)?|IF|IGNORE|IMPORT|INDEX|INFILE|INNER|INNODB|INOUT|INSERT|INT|INTEGER|INTERSECT|INTO|INVOKER|ISOLATION LEVEL|JOIN|KEYS?|KILL|LANGUAGE SQL|LAST|LEFT|LIMIT|LINENO|LINES|LINESTRING|LOAD|LOCAL|LOCK|LONG(?:BLOB|TEXT)|MATCH(?:ED)?|MEDIUM(?:BLOB|INT|TEXT)|MERGE|MIDDLEINT|MODIFIES SQL DATA|MODIFY|MULTI(?:LINESTRING|POINT|POLYGON)|NATIONAL(?: CHAR VARYING| CHARACTER(?: VARYING)?| VARCHAR)?|NATURAL|NCHAR(?: VARCHAR)?|NEXT|NO(?: SQL|CHECK|CYCLE)?|NONCLUSTERED|NULLIF|NUMERIC|OFF?|OFFSETS?|ON|OPEN(?:DATASOURCE|QUERY|ROWSET)?|OPTIMIZE|OPTION(?:ALLY)?|ORDER|OUT(?:ER|FILE)?|OVER|PARTIAL|PARTITION|PERCENT|PIVOT|PLAN|POINT|POLYGON|PRECEDING|PRECISION|PREV|PRIMARY|PRINT|PRIVILEGES|PROC(?:EDURE)?|PUBLIC|PURGE|QUICK|RAISERROR|READ(?:S SQL DATA|TEXT)?|REAL|RECONFIGURE|REFERENCES|RELEASE|RENAME|REPEATABLE|REPLICATION|REQUIRE|RESTORE|RESTRICT|RETURNS?|REVOKE|RIGHT|ROLLBACK|ROUTINE|ROW(?:COUNT|GUIDCOL|S)?|RTREE|RULE|SAVE(?:POINT)?|SCHEMA|SELECT|SERIAL(?:IZABLE)?|SESSION(?:_USER)?|SET(?:USER)?|SHARE MODE|SHOW|SHUTDOWN|SIMPLE|SMALLINT|SNAPSHOT|SOME|SONAME|START(?:ING BY)?|STATISTICS|STATUS|STRIPED|SYSTEM_USER|TABLES?|TABLESPACE|TEMP(?:ORARY|TABLE)?|TERMINATED BY|TEXT(?:SIZE)?|THEN|TIMESTAMP|TINY(?:BLOB|INT|TEXT)|TOP?|TRAN(?:SACTIONS?)?|TRIGGER|TRUNCATE|TSEQUAL|TYPES?|UNBOUNDED|UNCOMMITTED|UNDEFINED|UNION|UNIQUE|UNPIVOT|UPDATE(?:TEXT)?|USAGE|USE|USER|USING|VALUES?|VAR(?:BINARY|CHAR|CHARACTER|YING)|VIEW|WAITFOR|WARNINGS|WHEN|WHERE|WHILE|WITH(?: ROLLUP|IN)?|WORK|WRITE(?:TEXT)?)\b/i,
 	'boolean': /\b(?:TRUE|FALSE|NULL)\b/i,
 	'number': /\b-?(?:0x)?\d*\.?[\da-f]+\b/,
 	'operator': /[-+*\/=%^~]|&&?|\|?\||!=?|<(?:=>?|<|>)?|>[>=]?|\b(?:AND|BETWEEN|IN|LIKE|NOT|OR|IS|DIV|REGEXP|RLIKE|SOUNDS LIKE|XOR)\b/i,
@@ -46446,8 +46055,8 @@ Prism.languages.hql = {
 };
 
 Prism.languages.insertBefore('hql', 'string', {
-  'operator': /(\+|-|!=|=|!\^|\^|!)|(\b(and|or|not|in|with|as|by)\b)/g,
-  'keyword': /(\$[a-z]+|\$now|<[a-z]+>|\b[0-9]+(ms|s|m|H|d|w)\b)/g
+  'operator': /(\+|-|!=|=|!\^|\^|!)|(\b(and|or|not|in)\b)/g,
+  'keyword': /(\$key|\$now|<[a-z]+>|\b[0-9]+(ms|s|m|H|d|w)\b)/g
 });
 
 Prism.languages.ts = {
@@ -46695,13 +46304,14 @@ Prism.languages.ts = {
 (function() {
   var m = angular.module('hdoc.docs', [
     '_pages/docs.ngt',
+    '_pages/docs/index.ngt',
+    '_pages/docs/architecture.ngt',
     '_pages/docs/getting_started.ngt',
     '_pages/docs/getting_started/installation.ngt',
     '_pages/docs/getting_started/configuration.ngt',
     '_pages/docs/getting_started/compile.ngt',
     '_pages/docs/data_model.ngt',
-    '_pages/docs/query_language.ngt',
-    '_pages/docs/overview.ngt',
+    '_pages/docs/filter_dsl.ngt',
     '_pages/docs/api.ngt',
     '_pages/docs/api/accept-metadata-query-body.ngt',
     '_pages/docs/api/accept-series.ngt',
@@ -46710,7 +46320,6 @@ Prism.languages.ts = {
     '_pages/docs/profiles.ngt',
     '_pages/docs/config.ngt',
     '_pages/docs/federation.ngt',
-    '_pages/docs/federation-tail.ngt',
     '_pages/docs/config/cluster.ngt',
     '_pages/docs/config/metrics.ngt',
     '_pages/docs/config/metadata.ngt',
@@ -46728,14 +46337,25 @@ Prism.languages.ts = {
   m.config(["$stateProvider", function($stateProvider) {
     $stateProvider
       .state('docs', {
-        abstract: true,
         url: "/docs",
-        templateUrl: "_pages/docs.ngt"
+        templateUrl: "_pages/docs.ngt",
+        controller: ["$state", function($state) {
+          if ($state.is('docs'))
+            $state.go('docs.index');
+        }]
+      })
+      .state('docs.index', {
+        url: "/index",
+        templateUrl: "_pages/docs/index.ngt"
+      })
+      .state('docs.architecture', {
+        url: '/architecture',
+        templateUrl: '_pages/docs/architecture.ngt'
       })
       .state('docs.getting_started', {
         abstract: true,
         url: '/getting_started',
-        template: '<ui-view></ui-view>'
+        template: '<ui-view autoscroll="true"></ui-view>'
       })
       .state('docs.getting_started.index', {
         url: '',
@@ -46753,13 +46373,9 @@ Prism.languages.ts = {
         url: '/configuration',
         templateUrl: '_pages/docs/getting_started/configuration.ngt'
       })
-      .state('docs.overview', {
-        url: '/overview',
-        templateUrl: '_pages/docs/overview.ngt'
-      })
-      .state('docs.query_language', {
-        url: '/query_language',
-        templateUrl: '_pages/docs/query_language.ngt'
+      .state('docs.filter_dsl', {
+        url: '/filter_dsl',
+        templateUrl: '_pages/docs/filter_dsl.ngt'
       })
       .state('docs.data_model', {
         url: '/data_model',
@@ -46792,7 +46408,7 @@ Prism.languages.ts = {
       .state('docs.config', {
         abstract: true,
         url: '/config',
-        template: '<ui-view></ui-view>'
+        template: '<ui-view autoscroll="true"></ui-view>'
       })
       .state('docs.config.cluster', {
         url: '/cluster',
@@ -46839,30 +46455,6 @@ Prism.languages.ts = {
     }]);
 })();
 
-(function() {
-  var m = angular.module('hdoc.tutorial', [
-    '_pages/tutorial/index.ngt',
-    '_pages/tutorial/kafka_consumer.ngt',
-  ]);
-
-  m.config(["$stateProvider", function($stateProvider) {
-    $stateProvider
-      .state('tutorial', {
-        abstract: true,
-        url: '/tutorial',
-        template: '<ui-view></ui-view>'
-      })
-      .state('tutorial.index', {
-        url: "/index",
-        templateUrl: "_pages/tutorial/index.ngt"
-      })
-      .state('tutorial.kafka_consumer', {
-        url: "/kafka_consumer",
-        templateUrl: "_pages/tutorial/kafka_consumer.ngt"
-      });
-  }]);
-})();
-
 
 (function() {
   var m = angular.module('hdoc', [
@@ -46870,7 +46462,6 @@ Prism.languages.ts = {
     'ui.bootstrap',
     'hdoc.index',
     'hdoc.docs',
-    'hdoc.tutorial',
     'hdoc.api'
   ]);
 
