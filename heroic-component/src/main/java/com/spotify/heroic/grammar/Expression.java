@@ -33,9 +33,9 @@ import java.util.concurrent.TimeUnit;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes({
-    @JsonSubTypes.Type(DoubleExpression.class), @JsonSubTypes.Type(DurationExpression.class),
+    @JsonSubTypes.Type(FloatExpression.class), @JsonSubTypes.Type(DurationExpression.class),
     @JsonSubTypes.Type(DateTimeExpression.class), @JsonSubTypes.Type(TimeExpression.class),
-    @JsonSubTypes.Type(InstantExpression.class), @JsonSubTypes.Type(EmptyExpression.class),
+    @JsonSubTypes.Type(InstantExpression.class), @JsonSubTypes.Type(AnyExpression.class),
     @JsonSubTypes.Type(FunctionExpression.class), @JsonSubTypes.Type(IntegerExpression.class),
     @JsonSubTypes.Type(LetExpression.class), @JsonSubTypes.Type(ListExpression.class),
     @JsonSubTypes.Type(MinusExpression.class), @JsonSubTypes.Type(PlusExpression.class),
@@ -109,8 +109,8 @@ public interface Expression {
         return new ReferenceExpression(ctx, name);
     }
 
-    static EmptyExpression empty(Context ctx) {
-        return new EmptyExpression(ctx);
+    static AnyExpression any(Context ctx) {
+        return new AnyExpression(ctx);
     }
 
     static ListExpression list(Context ctx, Expression... expressions) {
@@ -155,11 +155,11 @@ public interface Expression {
     }
 
     interface Visitor<R> {
-        default R visitEmpty(final EmptyExpression e) {
+        default R visitAny(final AnyExpression e) {
             return defaultAction(e);
         }
 
-        default R visitDouble(final DoubleExpression e) {
+        default R visitDouble(final FloatExpression e) {
             return defaultAction(e);
         }
 

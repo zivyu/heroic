@@ -41,6 +41,7 @@ import com.spotify.heroic.common.Features;
 import com.spotify.heroic.common.OptionalLimit;
 import com.spotify.heroic.filter.Filter;
 import com.spotify.heroic.filter.TrueFilter;
+import com.spotify.heroic.grammar.AnyExpression;
 import com.spotify.heroic.grammar.DefaultScope;
 import com.spotify.heroic.grammar.Expression;
 import com.spotify.heroic.grammar.FunctionExpression;
@@ -145,8 +146,8 @@ public class CoreQueryManager implements QueryManager {
                         }
                     }));
 
-                final Optional<Aggregation> aggregation =
-                    e.getSelect().map(expr -> expr.visit(new Expression.Visitor<Aggregation>() {
+                final Aggregation aggregation =
+                    e.getSelect().visit(new Expression.Visitor<Aggregation>() {
                         @Override
                         public Aggregation visitFunction(final FunctionExpression e) {
                             return aggregations.build(e.getName(), e.getArguments(),
@@ -157,14 +158,19 @@ public class CoreQueryManager implements QueryManager {
                         public Aggregation visitString(final StringExpression e) {
                             return visitFunction(e.cast(FunctionExpression.class));
                         }
-                    }));
+
+                        @Override
+                        public Aggregation visitAny(final AnyExpression e) {
+                            return visitFunction(e.cast(FunctionExpression.class));
+                        }
+                    });
 
                 final Optional<Filter> filter = e.getFilter();
 
                 return new QueryBuilder()
                     .source(source)
                     .range(range)
-                    .aggregation(aggregation)
+                    .aggregation(Optional.of(aggregation))
                     .filter(filter);
             }
         });
@@ -194,8 +200,8 @@ public class CoreQueryManager implements QueryManager {
 
             final AggregationInstance aggregationInstance;
 
-            final Features features = CoreQueryManager.this.features
-                .applySet(q.getFeatures().orElseGet(FeatureSet::empty));
+            final Features features = CoreQueryManager.this.features.applySet(
+                q.getFeatures().orElseGet(FeatureSet::empty));
 
             boolean isDistributed = features.hasFeature(Feature.DISTRIBUTED_AGGREGATIONS);
 

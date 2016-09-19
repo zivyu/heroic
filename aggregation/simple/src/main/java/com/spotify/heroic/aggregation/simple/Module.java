@@ -30,7 +30,7 @@ import com.spotify.heroic.aggregation.SamplingAggregationDSL;
 import com.spotify.heroic.aggregation.SamplingQuery;
 import com.spotify.heroic.common.Duration;
 import com.spotify.heroic.dagger.LoadingComponent;
-import com.spotify.heroic.grammar.DoubleExpression;
+import com.spotify.heroic.grammar.FloatExpression;
 import com.spotify.heroic.grammar.Expression;
 import com.spotify.heroic.grammar.IntegerExpression;
 import dagger.Component;
@@ -100,11 +100,11 @@ public class Module implements HeroicModule {
                         final Optional<Duration> extent
                     ) {
                         final Optional<Double> q = args
-                            .positionalOrKeyword("q", DoubleExpression.class)
-                            .map(DoubleExpression::getValue);
+                            .positionalOrKeyword("q", FloatExpression.class)
+                            .map(FloatExpression::getValue);
                         final Optional<Double> error = args
-                            .positionalOrKeyword("error", DoubleExpression.class)
-                            .map(DoubleExpression::getValue);
+                            .positionalOrKeyword("error", FloatExpression.class)
+                            .map(FloatExpression::getValue);
                         return new Quantile(Optional.empty(), size, extent, q, error);
                     }
                 });
@@ -120,11 +120,11 @@ public class Module implements HeroicModule {
                     Optional.empty()));
 
             c.register(AboveK.NAME, AboveK.class, AboveKInstance.class,
-                args -> new AboveK(fetchK(args, DoubleExpression.class).getValue(),
+                args -> new AboveK(fetchK(args, FloatExpression.class).getValue(),
                     Optional.empty()));
 
             c.register(BelowK.NAME, BelowK.class, BelowKInstance.class,
-                args -> new BelowK(fetchK(args, DoubleExpression.class).getValue(),
+                args -> new BelowK(fetchK(args, FloatExpression.class).getValue(),
                     Optional.empty()));
         }
 

@@ -27,13 +27,11 @@ import lombok.Data;
 import java.util.concurrent.TimeUnit;
 
 /**
- * int's are represented internally as longs.
- *
- * @author udoprog
+ * Floating point number expressions.
  */
 @Data
-@JsonTypeName("double")
-public final class DoubleExpression implements Expression {
+@JsonTypeName("float")
+public final class FloatExpression implements Expression {
     private final Context context;
     private final double value;
 
@@ -43,38 +41,38 @@ public final class DoubleExpression implements Expression {
     }
 
     @Override
-    public DoubleExpression multiply(Expression other) {
-        return new DoubleExpression(context.join(other.getContext()),
-            value * other.cast(DoubleExpression.class).value);
+    public FloatExpression multiply(Expression other) {
+        return new FloatExpression(context.join(other.getContext()),
+            value * other.cast(FloatExpression.class).value);
     }
 
     @Override
-    public DoubleExpression divide(Expression other) {
-        return new DoubleExpression(context.join(other.getContext()),
-            value / other.cast(DoubleExpression.class).value);
+    public FloatExpression divide(Expression other) {
+        return new FloatExpression(context.join(other.getContext()),
+            value / other.cast(FloatExpression.class).value);
     }
 
     @Override
-    public DoubleExpression sub(Expression other) {
-        return new DoubleExpression(context.join(other.getContext()),
-            value - other.cast(DoubleExpression.class).value);
+    public FloatExpression sub(Expression other) {
+        return new FloatExpression(context.join(other.getContext()),
+            value - other.cast(FloatExpression.class).value);
     }
 
     @Override
-    public DoubleExpression add(Expression other) {
-        return new DoubleExpression(context.join(other.getContext()),
-            value + other.cast(DoubleExpression.class).value);
+    public FloatExpression add(Expression other) {
+        return new FloatExpression(context.join(other.getContext()),
+            value + other.cast(FloatExpression.class).value);
     }
 
     @Override
-    public DoubleExpression negate() {
-        return new DoubleExpression(context, -value);
+    public FloatExpression negate() {
+        return new FloatExpression(context, -value);
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public <T extends Expression> T cast(Class<T> to) {
-        if (to.isAssignableFrom(DoubleExpression.class)) {
+        if (to.isAssignableFrom(FloatExpression.class)) {
             return (T) this;
         }
 

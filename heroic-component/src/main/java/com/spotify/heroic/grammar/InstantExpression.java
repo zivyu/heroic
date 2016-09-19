@@ -51,8 +51,8 @@ public class InstantExpression implements Expression {
             return (T) new IntegerExpression(context, instant.toEpochMilli());
         }
 
-        if (to.isAssignableFrom(DoubleExpression.class)) {
-            return (T) new DoubleExpression(context, instant.toEpochMilli());
+        if (to.isAssignableFrom(FloatExpression.class)) {
+            return (T) new FloatExpression(context, instant.toEpochMilli());
         }
 
         if (to.isAssignableFrom(DurationExpression.class)) {

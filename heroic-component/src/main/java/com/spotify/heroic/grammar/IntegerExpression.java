@@ -90,8 +90,8 @@ public final class IntegerExpression implements Expression {
             return (T) new DurationExpression(context, TimeUnit.MILLISECONDS, value);
         }
 
-        if (to.isAssignableFrom(DoubleExpression.class)) {
-            return (T) new DoubleExpression(context, ((Long) value).doubleValue());
+        if (to.isAssignableFrom(FloatExpression.class)) {
+            return (T) new FloatExpression(context, ((Long) value).doubleValue());
         }
 
         throw context.castError(this, to);

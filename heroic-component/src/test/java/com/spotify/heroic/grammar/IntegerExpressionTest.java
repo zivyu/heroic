@@ -31,7 +31,7 @@ public class IntegerExpressionTest extends AbstractExpressionTest<IntegerExpress
 
         assertEquals(new DurationExpression(ctx, TimeUnit.MILLISECONDS, integer.getValue()),
             integer.cast(DurationExpression.class));
-        assertEquals(new DoubleExpression(ctx, 42D), integer.cast(DoubleExpression.class));
+        assertEquals(new FloatExpression(ctx, 42D), integer.cast(FloatExpression.class));
     }
 
     @Test

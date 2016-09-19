@@ -24,7 +24,7 @@ package com.spotify.heroic.aggregation.cardinality;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.spotify.heroic.grammar.DoubleExpression;
+import com.spotify.heroic.grammar.FloatExpression;
 import com.spotify.heroic.grammar.Expression;
 import com.spotify.heroic.grammar.FunctionExpression;
 import com.spotify.heroic.grammar.IntegerExpression;
@@ -172,7 +172,7 @@ public interface CardinalityMethod {
 
             private CardinalityMethod buildHyperLogLog(final FunctionExpression e) {
                 final Optional<Double> precision =
-                    e.keyword("precision").map(i -> i.cast(DoubleExpression.class).getValue());
+                    e.keyword("precision").map(i -> i.cast(FloatExpression.class).getValue());
 
                 final Optional<Boolean> includeKey = e
                     .keyword("includeKey")
