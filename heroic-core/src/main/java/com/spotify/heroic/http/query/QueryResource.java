@@ -28,9 +28,12 @@ import com.spotify.heroic.common.JavaxRestFramework;
 import com.spotify.heroic.metric.QueryResult;
 import eu.toolchain.async.AsyncFramework;
 import eu.toolchain.async.AsyncFuture;
-import lombok.Data;
-import org.apache.commons.lang3.tuple.Pair;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -40,12 +43,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.MediaType;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+import lombok.Data;
+import org.apache.commons.lang3.tuple.Pair;
 
 @Path("query")
 @Produces(MediaType.APPLICATION_JSON)
@@ -66,14 +65,15 @@ public class QueryResource {
     @Path("metrics")
     @Consumes(MediaType.TEXT_PLAIN)
     public void metricsText(
-        @Suspended final AsyncResponse response, @QueryParam("group") String group, String query
+        @Suspended final AsyncResponse response, @QueryParam("group") String group,
+        @QueryParam("fullSeries") Boolean fullSeries, String query
     ) {
         final Query q = this.query.newQueryFromString(query).build();
 
         final QueryManager.Group g = this.query.useOptionalGroup(Optional.ofNullable(group));
         final AsyncFuture<QueryResult> callback = g.query(q);
 
-        bindMetricsResponse(response, callback);
+        bindMetricsResponse(response, callback, Optional.ofNullable(fullSeries).orElse(false));
     }
 
     @POST
@@ -81,22 +81,24 @@ public class QueryResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public void metrics(
         @Suspended final AsyncResponse response, @QueryParam("group") String group,
-        QueryMetrics query
+        @QueryParam("fullSeries") Boolean fullSeries, QueryMetrics query
     ) {
         final Query q = query.toQueryBuilder(this.query::newQueryFromString).build();
 
         final QueryManager.Group g = this.query.useOptionalGroup(Optional.ofNullable(group));
         final AsyncFuture<QueryResult> callback = g.query(q);
 
-        bindMetricsResponse(response, callback);
+        bindMetricsResponse(response, callback, Optional.ofNullable(fullSeries).orElse(false));
     }
 
     @POST
     @Path("batch")
     public void metrics(
         @Suspended final AsyncResponse response, @QueryParam("backend") String group,
-        final QueryBatch query
+        @QueryParam("fullSeries") Boolean maybeFullSeries, final QueryBatch query
     ) {
+        final boolean fullSeries = Optional.ofNullable(maybeFullSeries).orElse(false);
+
         final QueryManager.Group g = this.query.useOptionalGroup(Optional.ofNullable(group));
 
         final List<AsyncFuture<Pair<String, QueryResult>>> futures = new ArrayList<>();
@@ -122,7 +124,7 @@ public class QueryResource {
                     final QueryResult r = e.getRight();
                     results.put(e.getLeft(),
                         new QueryMetricsResponse(r.getRange(), r.getGroups(), r.getErrors(),
-                            r.getTrace(), r.getLimits()));
+                            r.getTrace(), r.getLimits(), fullSeries));
                 }
 
                 return new QueryBatchResponse(results.build());
@@ -134,13 +136,14 @@ public class QueryResource {
     }
 
     private void bindMetricsResponse(
-        final AsyncResponse response, final AsyncFuture<QueryResult> callback
+        final AsyncResponse response, final AsyncFuture<QueryResult> callback,
+        final boolean fullSeries
     ) {
         response.setTimeout(300, TimeUnit.SECONDS);
 
         httpAsync.bind(response, callback,
             r -> new QueryMetricsResponse(r.getRange(), r.getGroups(), r.getErrors(), r.getTrace(),
-                r.getLimits()));
+                r.getLimits(), fullSeries));
     }
 
     @Data

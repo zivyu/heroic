@@ -33,9 +33,6 @@ import com.spotify.heroic.metric.RequestError;
 import com.spotify.heroic.metric.ResultLimits;
 import com.spotify.heroic.metric.SeriesValues;
 import com.spotify.heroic.metric.ShardedResultGroup;
-import lombok.Data;
-import lombok.NonNull;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,6 +40,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import lombok.Data;
+import lombok.NonNull;
 
 @Data
 @JsonSerialize(using = QueryMetricsResponse.Serializer.class)
@@ -65,6 +64,8 @@ public class QueryMetricsResponse {
     @NonNull
     private final ResultLimits limits;
 
+    private final boolean fullSeries;
+
     public static class Serializer extends JsonSerializer<QueryMetricsResponse> {
         @Override
         public void serialize(
@@ -83,7 +84,7 @@ public class QueryMetricsResponse {
             serializeCommonTags(g, common);
 
             g.writeFieldName("result");
-            serializeResult(g, common, result);
+            serializeResult(g, response, common, result);
 
             g.writeFieldName("errors");
             serializeErrors(g, response.getErrors());
@@ -156,8 +157,8 @@ public class QueryMetricsResponse {
         }
 
         private void serializeResult(
-            final JsonGenerator g, final Map<String, SortedSet<String>> common,
-            final List<ShardedResultGroup> result
+            final JsonGenerator g, final QueryMetricsResponse response,
+            final Map<String, SortedSet<String>> common, final List<ShardedResultGroup> result
         ) throws IOException {
 
             g.writeStartArray();
@@ -173,6 +174,10 @@ public class QueryMetricsResponse {
                 g.writeObjectField("shard", group.getShard());
                 g.writeNumberField("cadence", group.getCadence());
                 g.writeObjectField("values", collection.getData());
+
+                if (response.isFullSeries()) {
+                    g.writeObjectField("series", group.getSeries());
+                }
 
                 writeKey(g, series.getKeys());
                 writeTags(g, common, series.getTags());
