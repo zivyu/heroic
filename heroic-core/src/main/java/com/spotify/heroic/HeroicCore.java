@@ -21,10 +21,6 @@
 
 package com.spotify.heroic;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
@@ -53,7 +49,8 @@ import com.spotify.heroic.dagger.LoadingModule;
 import com.spotify.heroic.dagger.PrimaryModule;
 import com.spotify.heroic.dagger.StartupPingerComponent;
 import com.spotify.heroic.dagger.StartupPingerModule;
-import com.spotify.heroic.generator.GeneratorComponent;
+import com.spotify.heroic.generator.CoreGeneratorComponent;
+import com.spotify.heroic.generator.DaggerCoreGeneratorComponent;
 import com.spotify.heroic.http.DaggerHttpServerComponent;
 import com.spotify.heroic.http.HttpServer;
 import com.spotify.heroic.http.HttpServerComponent;
@@ -77,6 +74,11 @@ import com.spotify.heroic.suggest.DaggerCoreSuggestComponent;
 import eu.toolchain.async.AsyncFramework;
 import eu.toolchain.async.AsyncFuture;
 import eu.toolchain.async.ResolvableFuture;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.io.InputStream;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.InetSocketAddress;
@@ -98,10 +100,10 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 
 /**
  * Configure and bootstrap a Heroic application.
@@ -483,7 +485,11 @@ public class HeroicCore implements HeroicConfiguration {
             .build();
         life.add(query.queryLife());
 
-        final GeneratorComponent generator = config.getGenerator().module(primary);
+        final CoreGeneratorComponent generator = DaggerCoreGeneratorComponent
+            .builder()
+            .primaryComponent(primary)
+            .coreGeneratorModule(config.getGenerator())
+            .build();
         life.add(generator.generatorLife());
 
         // install all lifecycles

@@ -28,7 +28,9 @@ import com.google.common.collect.ImmutableMap;
 import com.spotify.heroic.dagger.PrimaryComponent;
 import com.spotify.heroic.generator.random.RandomEventMetricGeneratorModule;
 import com.spotify.heroic.generator.sine.SineMetricGeneratorModule;
-import dagger.Component;
+import com.spotify.heroic.lifecycle.LifeCycle;
+import com.spotify.heroic.lifecycle.LifeCycleManager;
+import com.spotify.heroic.lifecycle.LifeCycles;
 import dagger.Module;
 import dagger.Provides;
 import lombok.NoArgsConstructor;
@@ -38,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.inject.Named;
 
 import static com.spotify.heroic.common.Optionals.mergeOptionalList;
 import static com.spotify.heroic.common.Optionals.pickOptional;
@@ -49,44 +52,39 @@ public class CoreGeneratorModule {
     private final List<MetricGeneratorModule> modules;
     private final MetadataGenerator metadata;
 
-    public GeneratorComponent module(final PrimaryComponent primary) {
-        return DaggerCoreGeneratorModule_C.builder().m(new M(primary)).build();
-    }
-
+    @Provides
     @GeneratorScope
-    @Component(modules = M.class)
-    interface C extends GeneratorComponent {
-        @Override
-        CoreGeneratorManager generatorManager();
+    Map<String, Generator> generators(final PrimaryComponent primary) {
+        final ImmutableMap.Builder<String, Generator> generators = ImmutableMap.builder();
+
+        final AtomicInteger i = new AtomicInteger();
+
+        for (final MetricGeneratorModule m : modules) {
+            final String id = m.id().orElseGet(() -> m.buildId(i.getAndIncrement()));
+            final MetricGeneratorModule.Depends depends = new MetricGeneratorModule.Depends();
+            final MetricGeneratorModule.Exposed exposed = m.module(primary, depends, id);
+            generators.put(id, exposed.generator());
+        }
+
+        return generators.build();
     }
 
-    @RequiredArgsConstructor
-    @Module
-    class M {
-        private final PrimaryComponent primary;
+    @Provides
+    @GeneratorScope
+    MetadataGenerator metadataGenerator() {
+        return metadata;
+    }
 
-        @Provides
-        @GeneratorScope
-        Map<String, Generator> generators() {
-            final ImmutableMap.Builder<String, Generator> generators = ImmutableMap.builder();
-
-            final AtomicInteger i = new AtomicInteger();
-
-            for (final MetricGeneratorModule m : modules) {
-                final String id = m.id().orElseGet(() -> m.buildId(i.getAndIncrement()));
-                final MetricGeneratorModule.Depends depends = new MetricGeneratorModule.Depends();
-                final MetricGeneratorModule.Exposed exposed = m.module(primary, depends, id);
-                generators.put(id, exposed.generator());
-            }
-
-            return generators.build();
-        }
-
-        @Provides
-        @GeneratorScope
-        MetadataGenerator metadataGenerator() {
-            return metadata;
-        }
+    @Provides
+    @GeneratorScope
+    @Named("generator")
+    LifeCycle lifeCycle(final LifeCycleManager manager, final Map<String, Generator> generators) {
+        return LifeCycle.combined(generators
+            .values()
+            .stream()
+            .filter(LifeCycles.class::isInstance)
+            .map(LifeCycles.class::cast)
+            .map(manager::build));
     }
 
     public static List<MetricGeneratorModule> defaultMetrics() {
