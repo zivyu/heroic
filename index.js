@@ -44959,7 +44959,7 @@ angular.module('_pages/index.ngt', []).run(['$templateCache', function($template
   $templateCache.put('_pages/index.ngt',
     '<div class="jumbotron">\n' +
     '  <div class="container">\n' +
-    '    <center><img src="/images/logo_on_light.256.png" /></center>\n' +
+    '    <center><img src="images/logo_on_light.256.png" /></center>\n' +
     '    <p class="lead">The Heroic Time Series Database</p>\n' +
     '  </div>\n' +
     '</div>\n' +
