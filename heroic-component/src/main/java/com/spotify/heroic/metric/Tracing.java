@@ -75,14 +75,7 @@ public interface Tracing {
     /**
      * Create a new watch.
      *
-     * @return a {@link com.spotify.heroic.metric.QueryTrace.Watch}
-     */
-    QueryTrace.Watch watch();
-
-    /**
-     * Create a new watch.
-     *
-     * @return a {@link com.spotify.heroic.metric.QueryTrace.Watch}
+     * @return a {@link com.spotify.heroic.metric.QueryTrace.NamedWatch}
      */
     QueryTrace.NamedWatch watch(final QueryTrace.Identifier what);
 
@@ -96,11 +89,6 @@ public interface Tracing {
         @Override
         public boolean isEnabled() {
             return true;
-        }
-
-        @Override
-        public QueryTrace.Watch watch() {
-            return new QueryTrace.ActiveWatch(Stopwatch.createStarted());
         }
 
         @Override
@@ -119,11 +107,6 @@ public interface Tracing {
         @Override
         public boolean isEnabled() {
             return false;
-        }
-
-        @Override
-        public QueryTrace.Watch watch() {
-            return QueryTrace.PASSIVE_WATCH;
         }
 
         @Override
