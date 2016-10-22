@@ -144,15 +144,6 @@ public interface QueryTrace {
      * How long the trace elapsed for.
      *
      * @return microseconds
-     * @deprecated use {@link #elapsed()}
-     */
-    @Deprecated
-    long getElapsed();
-
-    /**
-     * How long the trace elapsed for.
-     *
-     * @return microseconds
      */
     long elapsed();
 
@@ -178,11 +169,6 @@ public interface QueryTrace {
         }
 
         @JsonIgnore
-        @Override
-        public long getElapsed() {
-            return elapsed();
-        }
-
         @Override
         public long elapsed() {
             return 0L;
