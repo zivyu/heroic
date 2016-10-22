@@ -60,6 +60,7 @@ import com.spotify.heroic.metric.MetricType;
 import com.spotify.heroic.metric.QueryResult;
 import com.spotify.heroic.metric.QueryResultPart;
 import com.spotify.heroic.metric.QueryTrace;
+import com.spotify.heroic.metric.Tracing;
 import com.spotify.heroic.metric.WriteMetric;
 import com.spotify.heroic.suggest.KeySuggest;
 import com.spotify.heroic.suggest.TagKeyCount;
@@ -85,6 +86,10 @@ import java.util.function.Function;
 @Slf4j
 public class CoreQueryManager implements QueryManager {
     public static final long SHIFT_TOLERANCE = TimeUnit.MILLISECONDS.convert(10, TimeUnit.SECONDS);
+    public static final QueryTrace.Identifier WRITE_SERIES =
+        QueryTrace.identifier(CoreQueryManager.class, "writeSeries");
+    public static final QueryTrace.Identifier WRITE_METRIC =
+        QueryTrace.identifier(CoreQueryManager.class, "writeMetric");
     public static final QueryTrace.Identifier QUERY_NODE =
         QueryTrace.identifier(CoreQueryManager.class, "query_node");
     public static final QueryTrace.Identifier QUERY =
@@ -175,12 +180,16 @@ public class CoreQueryManager implements QueryManager {
         private final List<ClusterShard> shards;
 
         @Override
-        public AsyncFuture<QueryResult> query(Query q) {
+        public AsyncFuture<QueryResult> query(final Query q) {
+            final QueryOptions options = q.getOptions().orElseGet(QueryOptions::defaults);
+            final Tracing tracing = options.getTracing();
+            /* watch should come first to encompass as much of the query as possible */
+            final QueryTrace.NamedWatch watch = tracing.watch(QUERY);
+
             final List<AsyncFuture<QueryResultPart>> futures = new ArrayList<>();
 
             final MetricType source = q.getSource().orElse(MetricType.POINT);
 
-            final QueryOptions options = q.getOptions().orElseGet(QueryOptions::defaults);
             final Aggregation aggregation = q.getAggregation().orElse(Empty.INSTANCE);
             final DateRange rawRange = buildRange(q);
 
@@ -194,8 +203,8 @@ public class CoreQueryManager implements QueryManager {
 
             final AggregationInstance aggregationInstance;
 
-            final Features features = CoreQueryManager.this.features
-                .applySet(q.getFeatures().orElseGet(FeatureSet::empty));
+            final Features features = CoreQueryManager.this.features.applySet(
+                q.getFeatures().orElseGet(FeatureSet::empty));
 
             boolean isDistributed = features.hasFeature(Feature.DISTRIBUTED_AGGREGATIONS);
 
@@ -222,9 +231,11 @@ public class CoreQueryManager implements QueryManager {
 
             return queryCache.load(request, () -> {
                 for (final ClusterShard shard : shards) {
+                    final QueryTrace.NamedWatch watchNode = tracing.watch(QUERY_NODE);
+
                     final AsyncFuture<QueryResultPart> queryPart = shard
                         .apply(g -> g.query(request))
-                        .catchFailed(FullQuery.shardError(QUERY_NODE, shard))
+                        .catchFailed(FullQuery.shardError(watchNode, shard))
                         .directTransform(QueryResultPart.fromResultGroup(shard));
 
                     futures.add(queryPart);
@@ -233,7 +244,7 @@ public class CoreQueryManager implements QueryManager {
                 final OptionalLimit limit = options.getGroupLimit().orElse(groupLimit);
 
                 return async.collect(futures,
-                    QueryResult.collectParts(QUERY, range, combiner, limit));
+                    QueryResult.collectParts(watch, range, combiner, limit));
             });
         }
 
@@ -298,13 +309,16 @@ public class CoreQueryManager implements QueryManager {
 
         @Override
         public AsyncFuture<WriteMetadata> writeSeries(final WriteMetadata.Request request) {
-            return run(g -> g.writeSeries(request), WriteMetadata::shardError,
-                WriteMetadata.reduce());
+            final QueryTrace.NamedWatch w = request.getTracing().watch(WRITE_SERIES);
+            return run(g -> g.writeSeries(request), e -> WriteMetadata.shardError(e, w),
+                WriteMetadata.reduce(w));
         }
 
         @Override
         public AsyncFuture<WriteMetric> writeMetric(final WriteMetric.Request write) {
-            return run(g -> g.writeMetric(write), WriteMetric::shardError, WriteMetric.reduce());
+            final QueryTrace.NamedWatch w = write.getTracing().watch(WRITE_METRIC);
+            return run(g -> g.writeMetric(write), e -> WriteMetric.shardError(e, w),
+                WriteMetric.reduce(w));
         }
 
         @Override

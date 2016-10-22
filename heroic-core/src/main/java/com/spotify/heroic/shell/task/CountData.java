@@ -28,6 +28,7 @@ import com.spotify.heroic.dagger.CoreComponent;
 import com.spotify.heroic.metric.BackendKey;
 import com.spotify.heroic.metric.MetricBackendGroup;
 import com.spotify.heroic.metric.MetricManager;
+import com.spotify.heroic.metric.Tracing;
 import com.spotify.heroic.shell.AbstractShellTaskParams;
 import com.spotify.heroic.shell.ShellIO;
 import com.spotify.heroic.shell.ShellTask;
@@ -78,7 +79,8 @@ public class CountData implements ShellTask {
 
         final MetricBackendGroup group = metrics.useOptionalGroup(params.group);
 
-        final QueryOptions options = QueryOptions.builder().tracing(params.tracing).build();
+        final QueryOptions options =
+            QueryOptions.builder().tracing(Tracing.fromBoolean(params.tracing)).build();
 
         final ImmutableList.Builder<BackendKey> keys = ImmutableList.builder();
 

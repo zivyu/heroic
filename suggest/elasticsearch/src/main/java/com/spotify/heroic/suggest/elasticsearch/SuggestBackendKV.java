@@ -29,7 +29,6 @@ import com.spotify.heroic.common.DateRange;
 import com.spotify.heroic.common.Grouped;
 import com.spotify.heroic.common.Groups;
 import com.spotify.heroic.common.OptionalLimit;
-import com.spotify.heroic.common.RequestTimer;
 import com.spotify.heroic.common.Series;
 import com.spotify.heroic.common.Statistics;
 import com.spotify.heroic.elasticsearch.AbstractElasticsearchBackend;
@@ -49,6 +48,7 @@ import com.spotify.heroic.filter.StartsWithFilter;
 import com.spotify.heroic.filter.TrueFilter;
 import com.spotify.heroic.lifecycle.LifeCycleRegistry;
 import com.spotify.heroic.lifecycle.LifeCycles;
+import com.spotify.heroic.metric.QueryTrace;
 import com.spotify.heroic.statistics.SuggestBackendReporter;
 import com.spotify.heroic.suggest.KeySuggest;
 import com.spotify.heroic.suggest.SuggestBackend;
@@ -125,6 +125,13 @@ import static org.elasticsearch.index.query.QueryBuilders.termQuery;
 @ToString(of = {"connection"})
 public class SuggestBackendKV extends AbstractElasticsearchBackend
     implements SuggestBackend, Grouped, LifeCycles {
+    public static final QueryTrace.Identifier WRITE =
+        QueryTrace.identifier(SuggestBackendKV.class, "write");
+    public static final QueryTrace.Identifier WRITE_SERIES =
+        QueryTrace.identifier(SuggestBackendKV.class, "write/series");
+    public static final QueryTrace.Identifier WRITE_TAG =
+        QueryTrace.identifier(SuggestBackendKV.class, "write/tag");
+
     public static final String WRITE_CACHE_SIZE = "write-cache-size";
 
     static final String TAG_TYPE = "tag";
@@ -533,6 +540,7 @@ public class SuggestBackendKV extends AbstractElasticsearchBackend
     @Override
     public AsyncFuture<WriteSuggest> write(final WriteSuggest.Request request) {
         return connection.doto((final Connection c) -> {
+            final QueryTrace.NamedWatch watch = request.getTracing().watch(WRITE);
             final Series s = request.getSeries();
             final DateRange range = request.getRange();
 
@@ -544,7 +552,6 @@ public class SuggestBackendKV extends AbstractElasticsearchBackend
                 return async.failed(e);
             }
 
-            final RequestTimer<WriteSuggest> timer = WriteSuggest.timer();
             final List<AsyncFuture<WriteSuggest>> writes = new ArrayList<>();
 
             for (final String index : indices) {
@@ -563,14 +570,18 @@ public class SuggestBackendKV extends AbstractElasticsearchBackend
                 buildContext(series, s);
                 series.endObject();
 
+                final QueryTrace.NamedWatch seriesWatch = watch.watch(WRITE_SERIES);
+
                 writes.add(bind(c
                     .index(index, SERIES_TYPE)
                     .setId(seriesId)
                     .setSource(series)
                     .setOpType(OpType.CREATE)
-                    .execute()).directTransform(response -> timer.end()));
+                    .execute()).directTransform(response -> WriteSuggest.of(seriesWatch.end())));
 
                 for (final Map.Entry<String, String> e : s.getTags().entrySet()) {
+                    final QueryTrace.NamedWatch tagWatch = watch.watch(WRITE_TAG);
+
                     final XContentBuilder suggest = XContentFactory.jsonBuilder();
 
                     suggest.startObject();
@@ -585,11 +596,11 @@ public class SuggestBackendKV extends AbstractElasticsearchBackend
                         .setId(suggestId)
                         .setSource(suggest)
                         .setOpType(OpType.CREATE)
-                        .execute()).directTransform(response -> timer.end()));
+                        .execute()).directTransform(response -> WriteSuggest.of(tagWatch.end())));
                 }
             }
 
-            return async.collect(writes, WriteSuggest.reduce());
+            return async.collect(writes, WriteSuggest.reduce(watch));
         });
     }
 

@@ -23,7 +23,6 @@ package com.spotify.heroic.metric;
 
 import com.google.common.collect.ImmutableList;
 import com.spotify.heroic.cluster.ClusterShard;
-import com.spotify.heroic.common.RequestTimer;
 import com.spotify.heroic.common.Series;
 import eu.toolchain.async.Collector;
 import eu.toolchain.async.Transform;
@@ -34,46 +33,40 @@ import java.util.List;
 @Data
 public class WriteMetric {
     private final List<RequestError> errors;
-    private final List<Long> times;
+    private final QueryTrace trace;
 
-    public static WriteMetric of() {
-        return new WriteMetric(ImmutableList.of(), ImmutableList.of());
+    public static WriteMetric of(final QueryTrace trace) {
+        return new WriteMetric(ImmutableList.of(), trace);
     }
 
-    private static WriteMetric of(final Long time) {
-        return new WriteMetric(ImmutableList.of(), ImmutableList.of(time));
+    public static WriteMetric error(final RequestError error, final QueryTrace trace) {
+        return new WriteMetric(ImmutableList.of(error), trace);
     }
 
-    public static WriteMetric error(final RequestError error) {
-        return new WriteMetric(ImmutableList.of(error), ImmutableList.of());
+    public static Transform<Throwable, WriteMetric> shardError(
+        final ClusterShard c, final QueryTrace.NamedWatch watch
+    ) {
+        return e -> new WriteMetric(ImmutableList.of(ShardError.fromThrowable(c, e)), watch.end());
     }
 
-    public static Transform<Throwable, WriteMetric> shardError(final ClusterShard c) {
-        return e -> new WriteMetric(ImmutableList.of(ShardError.fromThrowable(c, e)),
-            ImmutableList.of());
-    }
-
-    public static Collector<WriteMetric, WriteMetric> reduce() {
+    public static Collector<WriteMetric, WriteMetric> reduce(final QueryTrace.NamedWatch watch) {
         return results -> {
             final ImmutableList.Builder<RequestError> errors = ImmutableList.builder();
-            final ImmutableList.Builder<Long> times = ImmutableList.builder();
+            final QueryTrace.Joiner joiner = watch.joiner();
 
             for (final WriteMetric r : results) {
                 errors.addAll(r.getErrors());
-                times.addAll(r.getTimes());
+                joiner.addChild(r.getTrace());
             }
 
-            return new WriteMetric(errors.build(), times.build());
+            return new WriteMetric(errors.build(), joiner.result());
         };
-    }
-
-    public static RequestTimer<WriteMetric> timer() {
-        return new RequestTimer<>(WriteMetric::of);
     }
 
     @Data
     public static class Request {
-        final Series series;
-        final MetricCollection data;
+        private final Tracing tracing;
+        private final Series series;
+        private final MetricCollection data;
     }
 }

@@ -27,7 +27,6 @@ import com.google.common.hash.HashCode;
 import com.spotify.heroic.common.DateRange;
 import com.spotify.heroic.common.Groups;
 import com.spotify.heroic.common.OptionalLimit;
-import com.spotify.heroic.common.RequestTimer;
 import com.spotify.heroic.common.Series;
 import com.spotify.heroic.elasticsearch.AbstractElasticsearchMetadataBackend;
 import com.spotify.heroic.elasticsearch.BackendType;
@@ -55,6 +54,7 @@ import com.spotify.heroic.metadata.FindSeriesIds;
 import com.spotify.heroic.metadata.FindTags;
 import com.spotify.heroic.metadata.MetadataBackend;
 import com.spotify.heroic.metadata.WriteMetadata;
+import com.spotify.heroic.metric.QueryTrace;
 import com.spotify.heroic.statistics.MetadataBackendReporter;
 import eu.toolchain.async.AsyncFramework;
 import eu.toolchain.async.AsyncFuture;
@@ -119,6 +119,11 @@ import static org.elasticsearch.index.query.FilterBuilders.termFilter;
 @ToString(of = {"connection"})
 public class MetadataBackendV1 extends AbstractElasticsearchMetadataBackend
     implements MetadataBackend, LifeCycles {
+    private static final QueryTrace.Identifier WRITE =
+        QueryTrace.identifier(MetadataBackendV1.class, "write");
+    private static final QueryTrace.Identifier WRITE_METADATA =
+        QueryTrace.identifier(MetadataBackendV1.class, "write/metadata");
+
     private static final TimeValue SCROLL_TIME = TimeValue.timeValueMillis(5000);
     private static final int SCROLL_SIZE = 1000;
 
@@ -202,6 +207,8 @@ public class MetadataBackendV1 extends AbstractElasticsearchMetadataBackend
     @Override
     public AsyncFuture<WriteMetadata> write(final WriteMetadata.Request request) {
         return doto(c -> {
+            final QueryTrace.NamedWatch watch = request.getTracing().watch(WRITE);
+
             final Series series = request.getSeries();
             final DateRange range = request.getRange();
             final String id = series.hash();
@@ -216,6 +223,8 @@ public class MetadataBackendV1 extends AbstractElasticsearchMetadataBackend
                     continue;
                 }
 
+                final QueryTrace.NamedWatch metadataWatch = watch.watch(WRITE_METADATA);
+
                 final XContentBuilder source = XContentFactory.jsonBuilder();
 
                 source.startObject();
@@ -228,11 +237,11 @@ public class MetadataBackendV1 extends AbstractElasticsearchMetadataBackend
                     .setSource(source)
                     .setOpType(OpType.CREATE);
 
-                final RequestTimer<WriteMetadata> timer = WriteMetadata.timer();
-                futures.add(bind(builder.execute()).directTransform(result -> timer.end()));
+                futures.add(bind(builder.execute()).directTransform(
+                    result -> WriteMetadata.of(metadataWatch.end())));
             }
 
-            return async.collect(futures, WriteMetadata.reduce());
+            return async.collect(futures, WriteMetadata.reduce(watch));
         });
     }
 

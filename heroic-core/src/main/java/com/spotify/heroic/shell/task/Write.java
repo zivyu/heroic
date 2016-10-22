@@ -29,6 +29,7 @@ import com.spotify.heroic.dagger.CoreComponent;
 import com.spotify.heroic.ingestion.Ingestion;
 import com.spotify.heroic.ingestion.IngestionGroup;
 import com.spotify.heroic.ingestion.IngestionManager;
+import com.spotify.heroic.ingestion.WriteOptions;
 import com.spotify.heroic.metric.Event;
 import com.spotify.heroic.metric.Metric;
 import com.spotify.heroic.metric.MetricCollection;
@@ -133,8 +134,11 @@ public class Write implements ShellTask {
         List<AsyncFuture<Void>> writes = new ArrayList<>();
 
         for (final MetricCollection group : groups.build()) {
+            final Ingestion.Request request =
+                new Ingestion.Request(WriteOptions.defaults(), series, group);
+
             writes.add(g
-                .write(new Ingestion.Request(series, group))
+                .write(request)
                 .directTransform(reportResult("metrics", io.out())));
         }
 
@@ -144,14 +148,8 @@ public class Write implements ShellTask {
     private Transform<Ingestion, Void> reportResult(final String title, final PrintWriter out) {
         return (result) -> {
             synchronized (out) {
-                int i = 0;
-
-                out.println(String.format("%s: Wrote %d", title, result.getTimes().size()));
-
-                for (final long time : result.getTimes()) {
-                    out.println(String.format("  #%03d %s", i++, Tasks.formatTimeNanos(time)));
-                }
-
+                out.println(String.format("%s: Trace:", title));
+                out.println("  " + json.writeValueAsString(result.getTrace()));
                 out.flush();
             }
 

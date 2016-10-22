@@ -6,10 +6,13 @@ import com.spotify.heroic.common.Series;
 import com.spotify.heroic.filter.Filter;
 import com.spotify.heroic.metadata.MetadataBackend;
 import com.spotify.heroic.metric.MetricBackend;
+import com.spotify.heroic.metric.QueryTrace;
+import com.spotify.heroic.metric.Tracing;
 import com.spotify.heroic.statistics.IngestionManagerReporter;
 import com.spotify.heroic.suggest.SuggestBackend;
 import eu.toolchain.async.AsyncFramework;
 import eu.toolchain.async.AsyncFuture;
+import eu.toolchain.async.Collector;
 import eu.toolchain.async.FutureFinished;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,6 +30,7 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -61,6 +65,8 @@ public class CoreIngestionGroupTest {
     @Mock
     private Ingestion.Request request;
     @Mock
+    private WriteOptions writeOptions;
+    @Mock
     private AsyncFuture<Ingestion> expected;
     @Mock
     private AsyncFuture<Ingestion> resolved;
@@ -72,10 +78,17 @@ public class CoreIngestionGroupTest {
     private Series series;
     @Mock
     private DateRange range;
+    @Mock
+    private Tracing tracing;
+    @Mock
+    private QueryTrace.NamedWatch namedWatch;
 
     @Before
     public void setup() {
         doReturn(series).when(request).getSeries();
+        doReturn(writeOptions).when(request).getOptions();
+        doReturn(tracing).when(writeOptions).getTracing();
+        doReturn(namedWatch).when(tracing).watch(any(QueryTrace.Identifier.class));
 
         doAnswer(invocation -> {
             ((FutureFinished) invocation.getArguments()[0]).finished();
@@ -125,7 +138,7 @@ public class CoreIngestionGroupTest {
         doReturn(true).when(filter).apply(series);
         doNothing().when(writePermits).acquire();
         doNothing().when(writePermits).release();
-        doReturn(expected).when(group).doWrite(request);
+        doReturn(expected).when(group).doWrite(request, namedWatch);
 
         assertEquals(expected, group.syncWrite(request));
 
@@ -135,7 +148,7 @@ public class CoreIngestionGroupTest {
         verify(writePermits).release();
         verify(reporter).incrementConcurrentWrites();
         verify(reporter).decrementConcurrentWrites();
-        verify(group).doWrite(request);
+        verify(group).doWrite(request, namedWatch);
         verify(expected).onFinished(any(FutureFinished.class));
     }
 
@@ -151,7 +164,7 @@ public class CoreIngestionGroupTest {
         doNothing().when(writePermits).release();
 
         doReturn(other).when(expected).onFinished(any(FutureFinished.class));
-        doReturn(other).when(group).doWrite(request);
+        doReturn(other).when(group).doWrite(request, namedWatch);
 
         assertEquals(expected, group.syncWrite(request));
 
@@ -161,7 +174,7 @@ public class CoreIngestionGroupTest {
         verify(writePermits, never()).release();
         verify(reporter, never()).incrementConcurrentWrites();
         verify(reporter, never()).decrementConcurrentWrites();
-        verify(group, never()).doWrite(request);
+        verify(group, never()).doWrite(request, namedWatch);
         verify(other, never()).onFinished(any(FutureFinished.class));
     }
 
@@ -179,7 +192,7 @@ public class CoreIngestionGroupTest {
         doNothing().when(writePermits).release();
 
         doReturn(other).when(expected).onFinished(any(FutureFinished.class));
-        doReturn(other).when(group).doWrite(request);
+        doReturn(other).when(group).doWrite(request, namedWatch);
 
         assertEquals(expected, group.syncWrite(request));
 
@@ -189,10 +202,11 @@ public class CoreIngestionGroupTest {
         verify(writePermits, never()).release();
         verify(reporter, never()).incrementConcurrentWrites();
         verify(reporter, never()).decrementConcurrentWrites();
-        verify(group, never()).doWrite(request);
+        verify(group, never()).doWrite(request, namedWatch);
         verify(other, never()).onFinished(any(FutureFinished.class));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testDoWrite() {
         final CoreIngestionGroup group = setupIngestionGroup(of(metric), of(metadata), of(suggest));
@@ -200,13 +214,13 @@ public class CoreIngestionGroupTest {
         final List<AsyncFuture<Ingestion>> futures = ImmutableList.of(other, other, other);
 
         doReturn(rangeSupplier).when(group).rangeSupplier(request);
-        doReturn(expected).when(async).collect(futures, Ingestion.reduce());
+        doReturn(expected).when(async).collect(eq(futures), any(Collector.class));
 
         doReturn(other).when(group).doMetricWrite(metric, request);
         doReturn(other).when(group).doMetadataWrite(metadata, request, range);
         doReturn(other).when(group).doSuggestWrite(suggest, request, range);
 
-        assertEquals(expected, group.doWrite(request));
+        assertEquals(expected, group.doWrite(request, namedWatch));
 
         verify(group).rangeSupplier(request);
         verify(group).doMetricWrite(metric, request);
@@ -215,6 +229,7 @@ public class CoreIngestionGroupTest {
         verify(rangeSupplier, times(2)).get();
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testDoWriteSome() {
         final CoreIngestionGroup group = setupIngestionGroup(of(metric), empty(), of(suggest));
@@ -222,13 +237,13 @@ public class CoreIngestionGroupTest {
         final List<AsyncFuture<Ingestion>> futures = ImmutableList.of(other, other);
 
         doReturn(rangeSupplier).when(group).rangeSupplier(request);
-        doReturn(expected).when(async).collect(futures, Ingestion.reduce());
+        doReturn(expected).when(async).collect(eq(futures), any(Collector.class));
 
         doReturn(other).when(group).doMetricWrite(metric, request);
         doReturn(other).when(group).doMetadataWrite(metadata, request, range);
         doReturn(other).when(group).doSuggestWrite(suggest, request, range);
 
-        assertEquals(expected, group.doWrite(request));
+        assertEquals(expected, group.doWrite(request, namedWatch));
 
         verify(group).rangeSupplier(request);
         verify(group).doMetricWrite(metric, request);

@@ -66,6 +66,8 @@ import java.util.function.Function;
 @ToString(of = {})
 @MetricScope
 public class LocalMetricManager implements MetricManager {
+    private static final QueryTrace.Identifier WRITE =
+        QueryTrace.identifier(LocalMetricManager.class, "write");
     private static final QueryTrace.Identifier QUERY =
         QueryTrace.identifier(LocalMetricManager.class, "query");
     private static final QueryTrace.Identifier FETCH =
@@ -147,11 +149,11 @@ public class LocalMetricManager implements MetricManager {
 
         @Override
         public AsyncFuture<FullQuery> query(final FullQuery.Request request) {
-            final QueryTrace.NamedWatch w = QueryTrace.watch(QUERY);
+            final QueryOptions options = request.getOptions();
+            final QueryTrace.NamedWatch w = options.getTracing().watch(QUERY);
 
             final Filter filter = request.getFilter();
             final MetricType source = request.getSource();
-            final QueryOptions options = request.getOptions();
             final AggregationInstance aggregation = request.getAggregation();
             final DateRange range = request.getRange();
 
@@ -207,7 +209,8 @@ public class LocalMetricManager implements MetricManager {
                 accept(b -> {
                     for (final Series s : result.getSeries()) {
                         fetches.add(() -> b
-                            .fetch(new FetchData.Request(source, s, range, options), watcher)
+                            .fetch(new FetchData.Request(source, s, range, options.getTracing()),
+                                watcher)
                             .directTransform(d -> Pair.of(s, d)));
                     }
                 });
@@ -216,7 +219,7 @@ public class LocalMetricManager implements MetricManager {
 
                 final ResultCollector collector;
 
-                if (options.isTracing()) {
+                if (options.getTracing().isEnabled()) {
                     // tracing enabled, keeps track of each individual FetchData trace.
                     collector = new ResultCollector(watcher, aggregation, session, limits,
                         options.getGroupLimit().orElse(groupLimit), failOnLimits) {
@@ -270,8 +273,9 @@ public class LocalMetricManager implements MetricManager {
         public AsyncFuture<FetchData> fetch(
             final FetchData.Request request, final FetchQuotaWatcher watcher
         ) {
+            final QueryTrace.NamedWatch watch = request.getTracing().watch(FETCH);
             final List<AsyncFuture<FetchData>> callbacks = map(b -> b.fetch(request, watcher));
-            return async.collect(callbacks, FetchData.collect(FETCH));
+            return async.collect(callbacks, FetchData.collect(watch));
         }
 
         @Override
@@ -281,7 +285,8 @@ public class LocalMetricManager implements MetricManager {
 
         @Override
         public AsyncFuture<WriteMetric> write(final WriteMetric.Request write) {
-            return async.collect(map(b -> b.write(write)), WriteMetric.reduce());
+            final QueryTrace.NamedWatch w = write.getTracing().watch(WRITE);
+            return async.collect(map(b -> b.write(write)), WriteMetric.reduce(w));
         }
 
         @Override

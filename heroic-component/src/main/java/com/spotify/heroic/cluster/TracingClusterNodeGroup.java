@@ -57,7 +57,8 @@ public class TracingClusterNodeGroup implements ClusterNode.Group {
 
     @Override
     public AsyncFuture<FullQuery> query(FullQuery.Request request) {
-        return delegate.query(request).directTransform(FullQuery.trace(query));
+        final QueryTrace.NamedWatch watch = request.getOptions().getTracing().watch(query);
+        return delegate.query(request).directTransform(FullQuery.trace(watch));
     }
 
     @Override

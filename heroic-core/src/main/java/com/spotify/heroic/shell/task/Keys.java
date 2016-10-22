@@ -33,6 +33,7 @@ import com.spotify.heroic.metric.BackendKeyFilter;
 import com.spotify.heroic.metric.BackendKeySet;
 import com.spotify.heroic.metric.MetricBackendGroup;
 import com.spotify.heroic.metric.MetricManager;
+import com.spotify.heroic.metric.Tracing;
 import com.spotify.heroic.shell.ShellIO;
 import com.spotify.heroic.shell.ShellTask;
 import com.spotify.heroic.shell.TaskName;
@@ -81,7 +82,8 @@ public class Keys implements ShellTask {
 
         final BackendKeyFilter keyFilter = Tasks.setupKeyFilter(params, mapper);
 
-        final QueryOptions.Builder options = QueryOptions.builder().tracing(params.tracing);
+        final QueryOptions.Builder options =
+            QueryOptions.builder().tracing(Tracing.fromBoolean(params.tracing));
 
         params.fetchSize.ifPresent(options::fetchSize);
 

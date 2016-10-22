@@ -55,9 +55,9 @@ public class BasicSerializationTest {
     public void testFullQuery() throws Exception {
         final List<ResultGroup> groups = new ArrayList<>();
         final List<RequestError> errors = new ArrayList<>();
-        final FullQuery expected =
-            new FullQuery(QueryTrace.of(QueryTrace.identifier("test"), 0L), errors, groups,
-                Statistics.empty(), ResultLimits.of());
+        final FullQuery expected = new FullQuery(
+            new QueryTrace.ActiveTrace(QueryTrace.identifier("test"), 0L, ImmutableList.of()),
+            errors, groups, Statistics.empty(), ResultLimits.of());
 
         assertSerialization("FullQuery.json", expected, FullQuery.class);
     }

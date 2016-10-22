@@ -39,6 +39,7 @@ import com.spotify.heroic.metadata.FindSeriesStream;
 import com.spotify.heroic.metadata.FindTags;
 import com.spotify.heroic.metadata.MetadataBackend;
 import com.spotify.heroic.metadata.WriteMetadata;
+import com.spotify.heroic.metric.QueryTrace;
 import eu.toolchain.async.AsyncFramework;
 import eu.toolchain.async.AsyncFuture;
 import lombok.ToString;
@@ -55,6 +56,9 @@ import java.util.stream.Stream;
 @MemoryScope
 @ToString(exclude = {"async", "storage"})
 public class MemoryBackend implements MetadataBackend {
+    public static final QueryTrace.Identifier WRITE =
+        QueryTrace.identifier(MemoryBackend.class, "write");
+
     private final AsyncFramework async;
     private final Groups groups;
     private final Set<Series> storage;
@@ -85,8 +89,9 @@ public class MemoryBackend implements MetadataBackend {
 
     @Override
     public AsyncFuture<WriteMetadata> write(final WriteMetadata.Request request) {
+        final QueryTrace.NamedWatch watch = request.getTracing().watch(WRITE);
         this.storage.add(request.getSeries());
-        return async.resolved(WriteMetadata.of());
+        return async.resolved(WriteMetadata.of(watch.end()));
     }
 
     @Override

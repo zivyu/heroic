@@ -32,6 +32,7 @@ import com.spotify.heroic.metric.MetricBackendGroup;
 import com.spotify.heroic.metric.MetricCollection;
 import com.spotify.heroic.metric.MetricManager;
 import com.spotify.heroic.metric.MetricType;
+import com.spotify.heroic.metric.Tracing;
 import com.spotify.heroic.shell.AbstractShellTaskParams;
 import com.spotify.heroic.shell.ShellIO;
 import com.spotify.heroic.shell.ShellTask;
@@ -95,10 +96,11 @@ public class Fetch implements ShellTask {
         final MetricBackendGroup readGroup = metrics.useOptionalGroup(params.group);
         final MetricType source = MetricType.fromIdentifier(params.source).orElse(MetricType.POINT);
 
-        final QueryOptions options = QueryOptions.builder().tracing(params.tracing).build();
+        final QueryOptions options =
+            QueryOptions.builder().tracing(Tracing.fromBoolean(params.tracing)).build();
 
         return readGroup
-            .fetch(new FetchData.Request(source, series, range, options))
+            .fetch(new FetchData.Request(source, series, range, options.getTracing()))
             .lazyTransform(result -> {
                 outer:
                 for (final MetricCollection g : result.getGroups()) {

@@ -35,6 +35,7 @@ import com.spotify.heroic.metric.BackendKeySet;
 import com.spotify.heroic.metric.MetricBackend;
 import com.spotify.heroic.metric.MetricCollection;
 import com.spotify.heroic.metric.MetricManager;
+import com.spotify.heroic.metric.Tracing;
 import com.spotify.heroic.metric.WriteMetric;
 import com.spotify.heroic.shell.ShellIO;
 import com.spotify.heroic.shell.ShellTask;
@@ -95,7 +96,8 @@ public class DataMigrate implements ShellTask {
     public AsyncFuture<Void> run(final ShellIO io, final TaskParameters p) throws Exception {
         final Parameters params = (Parameters) p;
 
-        final QueryOptions.Builder options = QueryOptions.builder().tracing(params.tracing);
+        final QueryOptions.Builder options =
+            QueryOptions.builder().tracing(Tracing.fromBoolean(params.tracing));
 
         params.fetchSize.ifPresent(options::fetchSize);
 
@@ -303,8 +305,10 @@ public class DataMigrate implements ShellTask {
             if (n % LINES == 0) {
                 synchronized (io) {
                     try {
-                        io.out().println(" failedKeys: " + failedKeys.get() + ", last: " +
-                            mapper.writeValueAsString(key));
+                        io
+                            .out()
+                            .println(" failedKeys: " + failedKeys.get() + ", last: " +
+                                mapper.writeValueAsString(key));
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
                     }
@@ -336,7 +340,7 @@ public class DataMigrate implements ShellTask {
             }
 
             final AsyncFuture<Void> write = to
-                .write(new WriteMetric.Request(key.getSeries(), value))
+                .write(new WriteMetric.Request(Tracing.disabled(), key.getSeries(), value))
                 .directTransform(v -> null);
 
             future.bind(write);

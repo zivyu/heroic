@@ -28,6 +28,7 @@ import com.google.common.util.concurrent.RateLimiter;
 import com.spotify.heroic.common.DateRange;
 import com.spotify.heroic.common.Series;
 import com.spotify.heroic.dagger.CoreComponent;
+import com.spotify.heroic.metric.Tracing;
 import com.spotify.heroic.shell.AbstractShellTaskParams;
 import com.spotify.heroic.shell.ShellIO;
 import com.spotify.heroic.shell.ShellTask;
@@ -116,7 +117,7 @@ public class MetadataLoad implements ShellTask {
                 total++;
 
                 try {
-                    target.write(new WriteSuggest.Request(series, now)).get();
+                    target.write(new WriteSuggest.Request(Tracing.disabled(), series, now)).get();
                 } catch (Exception e) {
                     failed++;
                 }

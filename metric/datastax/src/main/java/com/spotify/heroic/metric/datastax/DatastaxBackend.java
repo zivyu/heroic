@@ -48,6 +48,8 @@ import com.spotify.heroic.metric.MetricType;
 import com.spotify.heroic.metric.Point;
 import com.spotify.heroic.metric.QueryError;
 import com.spotify.heroic.metric.QueryTrace;
+import com.spotify.heroic.metric.RequestError;
+import com.spotify.heroic.metric.Tracing;
 import com.spotify.heroic.metric.WriteMetric;
 import com.spotify.heroic.metric.datastax.schema.Schema;
 import com.spotify.heroic.metric.datastax.schema.Schema.PreparedFetch;
@@ -83,6 +85,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * MetricBackend for Heroic cassandra datastore.
@@ -91,6 +95,8 @@ import java.util.function.Function;
 @Slf4j
 @ToString(of = {"connection"})
 public class DatastaxBackend extends AbstractMetricBackend implements LifeCycles {
+    public static final QueryTrace.Identifier WRITE =
+        QueryTrace.identifier(DatastaxBackend.class, "write");
     public static final QueryTrace.Identifier FETCH_SEGMENT =
         QueryTrace.identifier(DatastaxBackend.class, "fetch_segment");
     public static final QueryTrace.Identifier FETCH =
@@ -142,16 +148,16 @@ public class DatastaxBackend extends AbstractMetricBackend implements LifeCycles
         final int limit = watcher.getReadDataQuota();
 
         return connection.doto(c -> {
-            final QueryTrace.Watch w = QueryTrace.watch();
+            final QueryTrace.NamedWatch w = request.getTracing().watch(FETCH);
 
             final List<PreparedFetch> prepared =
                 c.schema.ranges(request.getSeries(), request.getRange());
 
             if (request.getType() == MetricType.POINT) {
-                return fetchDataPoints(w, limit, request.getOptions(), prepared, c);
+                return fetchDataPoints(w, limit, request.getTracing(), prepared, c);
             }
 
-            return async.resolved(FetchData.error(w.end(FETCH),
+            return async.resolved(FetchData.error(w.end(),
                 QueryError.fromMessage("unsupported source: " + request.getType())));
         });
     }
@@ -188,10 +194,12 @@ public class DatastaxBackend extends AbstractMetricBackend implements LifeCycles
                 throw new RuntimeException(e);
             }
 
+            final Tracing tracing = options.getTracing();
+
             prepareCachedStatement(c, select).directTransform(stmt -> {
                 BoundStatement bound = stmt.bind(select.getBindings().toArray());
 
-                if (options.isTracing()) {
+                if (tracing.isEnabled()) {
                     bound.enableTracing();
                 }
 
@@ -401,7 +409,7 @@ public class DatastaxBackend extends AbstractMetricBackend implements LifeCycles
         final Connection c, final SchemaInstance.WriteSession session,
         final WriteMetric.Request request
     ) throws IOException {
-        final List<Callable<AsyncFuture<Long>>> callables = new ArrayList<>();
+        final List<Callable<AsyncFuture<Void>>> callables = new ArrayList<>();
 
         final MetricCollection g = request.getData();
 
@@ -410,24 +418,27 @@ public class DatastaxBackend extends AbstractMetricBackend implements LifeCycles
                 final BoundStatement stmt = session.writePoint(request.getSeries(), d);
 
                 callables.add(() -> {
-                    final long start = System.nanoTime();
                     return Async
                         .bind(async, c.session.executeAsync(stmt))
-                        .directTransform((r) -> System.nanoTime() - start);
+                        .directTransform(r -> null);
                 });
             }
         }
 
-        return async.eventuallyCollect(callables, new StreamCollector<Long, WriteMetric>() {
-            final ConcurrentLinkedQueue<Long> q = new ConcurrentLinkedQueue<Long>();
+        /* we used to instru */
+        final QueryTrace.NamedWatch watch = request.getTracing().watch(WRITE);
+
+        return async.eventuallyCollect(callables, new StreamCollector<Void, WriteMetric>() {
+            final ConcurrentLinkedQueue<Throwable> errors = new ConcurrentLinkedQueue<>();
 
             @Override
-            public void resolved(Long result) throws Exception {
-                q.add(result);
+            public void resolved(final Void result) throws Exception {
+                /* do nothing */
             }
 
             @Override
             public void failed(Throwable cause) throws Exception {
+                errors.add(cause);
             }
 
             @Override
@@ -436,7 +447,20 @@ public class DatastaxBackend extends AbstractMetricBackend implements LifeCycles
 
             @Override
             public WriteMetric end(int resolved, int failed, int cancelled) throws Exception {
-                return new WriteMetric(ImmutableList.of(), ImmutableList.copyOf(q));
+                final Stream<RequestError> errorStream =
+                    this.errors.stream().map(QueryError::fromThrowable);
+
+                final Stream<RequestError> cancelledStream = Optional
+                    .of(cancelled)
+                    .filter(n -> n > 0)
+                    .map(n -> QueryError.fromMessage("Some fetches were cancelled (" + n + ")"))
+                    .map(Stream::of)
+                    .orElseGet(Stream::empty);
+
+                final List<RequestError> errors =
+                    Stream.concat(errorStream, cancelledStream).collect(Collectors.toList());
+
+                return new WriteMetric(errors, watch.end());
             }
         }, 500);
     }
@@ -461,7 +485,9 @@ public class DatastaxBackend extends AbstractMetricBackend implements LifeCycles
                 for (final Event e : events) {
                     final long eventElapsed =
                         TimeUnit.NANOSECONDS.convert(e.getSourceElapsed(), TimeUnit.MICROSECONDS);
-                    children.add(QueryTrace.of(QueryTrace.identifier(e.getName()), eventElapsed));
+                    children.add(
+                        new QueryTrace.ActiveTrace(QueryTrace.identifier(e.getName()), eventElapsed,
+                            ImmutableList.of()));
                 }
 
                 final QueryTrace.Identifier segment = QueryTrace.identifier(
@@ -470,17 +496,18 @@ public class DatastaxBackend extends AbstractMetricBackend implements LifeCycles
                 final long segmentElapsed =
                     TimeUnit.NANOSECONDS.convert(qt.getDurationMicros(), TimeUnit.MICROSECONDS);
 
-                return QueryTrace.of(segment, segmentElapsed, children.build());
+                return new QueryTrace.ActiveTrace(segment, segmentElapsed, children.build());
             }));
         }
 
         return async
             .collect(traces.build())
-            .directTransform(t -> QueryTrace.of(what, elapsed, ImmutableList.copyOf(t)));
+            .directTransform(
+                t -> new QueryTrace.ActiveTrace(what, elapsed, ImmutableList.copyOf(t)));
     }
 
     private AsyncFuture<FetchData> fetchDataPoints(
-        final QueryTrace.Watch w, final int limit, final QueryOptions options,
+        final QueryTrace.NamedWatch watch, final int limit, final Tracing tracing,
         final List<PreparedFetch> prepared, final Connection c
     ) throws Exception {
         final List<AsyncFuture<FetchData>> fetches = new ArrayList<>(prepared.size());
@@ -490,14 +517,15 @@ public class DatastaxBackend extends AbstractMetricBackend implements LifeCycles
 
             final Statement stmt;
 
-            if (options.isTracing()) {
+            if (tracing.isEnabled()) {
+                final QueryTrace.NamedWatch segmentWatch = watch.watch(FETCH_SEGMENT);
                 stmt = p.fetch(limit).enableTracing();
-                traceBuilder =
-                    result -> buildTrace(c, FETCH_SEGMENT.extend(p.toString()), w.elapsed(),
-                        result.getInfo());
+                traceBuilder = result -> buildTrace(c, FETCH_SEGMENT.extend(p.toString()),
+                    segmentWatch.elapsed(), result.getInfo());
             } else {
+                final QueryTrace.NamedWatch segmentWatch = watch.watch(FETCH_SEGMENT);
                 stmt = p.fetch(limit);
-                traceBuilder = result -> async.resolved(w.end(FETCH_SEGMENT));
+                traceBuilder = result -> async.resolved(segmentWatch.end());
             }
 
             final ResolvableFuture<FetchData> future = async.future();
@@ -506,7 +534,7 @@ public class DatastaxBackend extends AbstractMetricBackend implements LifeCycles
                 .bind(async, c.session.executeAsync(stmt))
                 .onDone(new RowFetchHelper<>(future, p.converter(),
                     result -> traceBuilder.apply(result).directTransform(trace -> {
-                        final ImmutableList<Long> times = ImmutableList.of(trace.getElapsed());
+                        final ImmutableList<Long> times = ImmutableList.of(trace.elapsed());
                         final List<MetricCollection> groups =
                             ImmutableList.of(MetricCollection.points(result.getData()));
                         return FetchData.of(trace, times, groups);
@@ -515,7 +543,7 @@ public class DatastaxBackend extends AbstractMetricBackend implements LifeCycles
             fetches.add(future);
         }
 
-        return async.collect(fetches, FetchData.collect(FETCH));
+        return async.collect(fetches, FetchData.collect(watch));
     }
 
     @RequiredArgsConstructor

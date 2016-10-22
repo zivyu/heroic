@@ -34,6 +34,7 @@ import com.spotify.heroic.common.OptionalLimit;
 import com.spotify.heroic.common.Series;
 import com.spotify.heroic.dagger.LoadingComponent;
 import com.spotify.heroic.filter.TrueFilter;
+import com.spotify.heroic.metric.Tracing;
 import com.spotify.heroic.suggest.KeySuggest;
 import com.spotify.heroic.suggest.MatchOptions;
 import com.spotify.heroic.suggest.SuggestBackend;
@@ -196,7 +197,7 @@ public abstract class AbstractSuggestBackendIT {
         final SuggestBackend suggest, final Series s, final DateRange range
     ) throws Exception {
         return suggest
-            .write(new WriteSuggest.Request(s, range))
+            .write(new WriteSuggest.Request(Tracing.disabled(), s, range))
             .lazyTransform(r -> async.retryUntilResolved(() -> checks(s),
                 RetryPolicy.timed(10000, RetryPolicy.exponential(100, 200))))
             .directTransform(retry -> null);

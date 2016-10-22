@@ -29,6 +29,7 @@ import com.spotify.heroic.common.Groups;
 import com.spotify.heroic.common.OptionalLimit;
 import com.spotify.heroic.common.Series;
 import com.spotify.heroic.filter.Filter;
+import com.spotify.heroic.metric.QueryTrace;
 import com.spotify.heroic.suggest.KeySuggest;
 import com.spotify.heroic.suggest.SuggestBackend;
 import com.spotify.heroic.suggest.TagKeyCount;
@@ -63,6 +64,9 @@ import java.util.stream.Stream;
 @MemoryScope
 @ToString(of = {})
 public class MemoryBackend implements SuggestBackend, Grouped {
+    private static final QueryTrace.Identifier WRITE =
+        QueryTrace.identifier(MemoryBackend.class, "write");
+
     private static final float SCORE = 1.0f;
 
     private final SortedMap<String, Set<String>> keys = new TreeMap<>();
@@ -220,6 +224,7 @@ public class MemoryBackend implements SuggestBackend, Grouped {
 
     @Override
     public AsyncFuture<WriteSuggest> write(final WriteSuggest.Request request) {
+        final QueryTrace.NamedWatch watch = request.getTracing().watch(WRITE);
         final Series s = request.getSeries();
 
         final Lock l = lock.writeLock();
@@ -249,7 +254,7 @@ public class MemoryBackend implements SuggestBackend, Grouped {
                 }
             }
 
-            return async.resolved(WriteSuggest.of());
+            return async.resolved(WriteSuggest.of(watch.end()));
         } finally {
             l.unlock();
         }

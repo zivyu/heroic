@@ -30,6 +30,7 @@ import com.spotify.heroic.dagger.CoreComponent;
 import com.spotify.heroic.metric.MetricCollection;
 import com.spotify.heroic.metric.RequestError;
 import com.spotify.heroic.metric.ShardedResultGroup;
+import com.spotify.heroic.metric.Tracing;
 import com.spotify.heroic.shell.AbstractShellTaskParams;
 import com.spotify.heroic.shell.ShellIO;
 import com.spotify.heroic.shell.ShellTask;
@@ -76,7 +77,8 @@ public class Query implements ShellTask {
         final ObjectMapper indent = mapper.copy();
         indent.configure(SerializationFeature.INDENT_OUTPUT, true);
 
-        final QueryOptions.Builder optionsBuilder = QueryOptions.builder().tracing(params.tracing);
+        final QueryOptions.Builder optionsBuilder =
+            QueryOptions.builder().tracing(Tracing.fromBoolean(params.tracing));
 
         params.dataLimit.ifPresent(optionsBuilder::dataLimit);
         params.groupLimit.ifPresent(optionsBuilder::groupLimit);

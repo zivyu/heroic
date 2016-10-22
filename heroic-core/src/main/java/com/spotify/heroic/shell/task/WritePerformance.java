@@ -25,7 +25,6 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
-import com.spotify.heroic.QueryOptions;
 import com.spotify.heroic.common.DateRange;
 import com.spotify.heroic.common.Series;
 import com.spotify.heroic.dagger.CoreComponent;
@@ -35,6 +34,7 @@ import com.spotify.heroic.metric.MetricBackendGroup;
 import com.spotify.heroic.metric.MetricCollection;
 import com.spotify.heroic.metric.MetricManager;
 import com.spotify.heroic.metric.MetricType;
+import com.spotify.heroic.metric.Tracing;
 import com.spotify.heroic.metric.WriteMetric;
 import com.spotify.heroic.shell.AbstractShellTaskParams;
 import com.spotify.heroic.shell.ShellIO;
@@ -101,13 +101,13 @@ public class WritePerformance implements ShellTask {
 
         for (final Series s : series) {
             reads.add(readGroup
-                .fetch(new FetchData.Request(MetricType.POINT, s, range, QueryOptions.defaults()))
+                .fetch(new FetchData.Request(MetricType.POINT, s, range, Tracing.disabled()))
                 .directTransform(result -> {
                     final ImmutableList.Builder<WriteMetric.Request> writes =
                         ImmutableList.builder();
 
                     for (final MetricCollection group : result.getGroups()) {
-                        writes.add(new WriteMetric.Request(s, group));
+                        writes.add(new WriteMetric.Request(Tracing.enabled(), s, group));
                     }
 
                     return writes.build();
@@ -248,7 +248,7 @@ public class WritePerformance implements ShellTask {
 
                 writes.add(() -> target.write(w).directTransform(result -> {
                     final long runtime = System.currentTimeMillis() - start;
-                    return new Times(result.getTimes(), runtime);
+                    return new Times(ImmutableList.of(result.getTrace().elapsed()), runtime);
                 }));
             }
         }
@@ -344,8 +344,7 @@ public class WritePerformance implements ShellTask {
     @ToString
     public static class Parameters extends AbstractShellTaskParams {
         @Option(name = "--limit",
-            usage = "Maximum number of datapoints to fetch (default: 1000000)",
-            metaVar = "<int>")
+            usage = "Maximum number of datapoints to fetch (default: 1000000)", metaVar = "<int>")
         private int limit = 1000000;
 
         @Option(name = "--series", required = true, usage = "Number of different series to write",

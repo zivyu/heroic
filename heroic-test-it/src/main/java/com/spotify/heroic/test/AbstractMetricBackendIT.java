@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableSet;
 import com.spotify.heroic.HeroicConfig;
 import com.spotify.heroic.HeroicCore;
 import com.spotify.heroic.HeroicCoreInstance;
-import com.spotify.heroic.QueryOptions;
 import com.spotify.heroic.common.DateRange;
 import com.spotify.heroic.common.GroupMember;
 import com.spotify.heroic.common.Series;
@@ -38,6 +37,7 @@ import com.spotify.heroic.metric.MetricCollection;
 import com.spotify.heroic.metric.MetricManagerModule;
 import com.spotify.heroic.metric.MetricModule;
 import com.spotify.heroic.metric.MetricType;
+import com.spotify.heroic.metric.Tracing;
 import com.spotify.heroic.metric.WriteMetric;
 import org.junit.After;
 import org.junit.Before;
@@ -113,10 +113,10 @@ public abstract class AbstractMetricBackendIT {
 
         // write and read data back
         final MetricCollection points = Data.points().p(100000L, 42D).build();
-        backend.write(new WriteMetric.Request(s1, points)).get();
+        backend.write(new WriteMetric.Request(Tracing.disabled(), s1, points)).get();
         FetchData data = backend
             .fetch(new FetchData.Request(MetricType.POINT, s1, new DateRange(10000L, 200000L),
-                QueryOptions.builder().build()), FetchQuotaWatcher.NO_QUOTA)
+                Tracing.disabled()), FetchQuotaWatcher.NO_QUOTA)
             .get();
 
         assertEquals(ImmutableSet.of(points), ImmutableSet.copyOf(data.getGroups()));
