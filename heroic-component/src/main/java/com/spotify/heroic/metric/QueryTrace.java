@@ -47,44 +47,6 @@ public interface QueryTrace {
     Joiner PASSIVE_JOINER = new PassiveJoiner();
 
     /**
-     * Create an active query trace.
-     *
-     * @param what Identifier of the trace
-     * @return a {@link com.spotify.heroic.metric.QueryTrace}
-     * @deprecated use {@link #watch(com.spotify.heroic.metric.QueryTrace.Identifier)}
-     */
-    static QueryTrace of(final Identifier what) {
-        return new ActiveTrace(what, 0L, ImmutableList.of());
-    }
-
-    /**
-     * Create an active query trace.
-     *
-     * @param what Identifier of the trace
-     * @param elapsed How long the query trace has elapsed for
-     * @return a {@link com.spotify.heroic.metric.QueryTrace}
-     * @deprecated use {@link #watch(com.spotify.heroic.metric.QueryTrace.Identifier)}
-     */
-    static QueryTrace of(final Identifier what, final long elapsed) {
-        return new ActiveTrace(what, elapsed, ImmutableList.of());
-    }
-
-    /**
-     * Create an active query trace.
-     *
-     * @param what Identifier of the trace
-     * @param elapsed How long the query trace has elapsed for
-     * @param children Children of the query trace
-     * @return a {@link com.spotify.heroic.metric.QueryTrace}
-     * @deprecated use {@link #watch(com.spotify.heroic.metric.QueryTrace.Identifier)}
-     */
-    static QueryTrace of(
-        final Identifier what, final long elapsed, final List<QueryTrace> children
-    ) {
-        return new ActiveTrace(what, elapsed, children);
-    }
-
-    /**
      * Create a new identifier for a class.
      *
      * @param where Class associated with the identifier
