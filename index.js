@@ -45491,7 +45491,7 @@ angular.module('_pages/docs/data_model.ngt', []).run(['$templateCache', function
     '</ul>\n' +
     '\n' +
     '<p>\n' +
-    '  By promiting the use of tags, and a convention over which tags should be used\n' +
+    '  By promoting the use of tags, and a convention over which tags should be used\n' +
     '  <em>how</em>, the problem becomes more manageable.\n' +
     '</p>\n' +
     '\n' +
