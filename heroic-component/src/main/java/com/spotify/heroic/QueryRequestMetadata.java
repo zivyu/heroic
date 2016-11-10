@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Spotify AB.
+ * Copyright (c) 2016 Spotify AB.
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,23 +21,29 @@
 
 package com.spotify.heroic;
 
-import com.spotify.heroic.aggregation.Aggregation;
-import com.spotify.heroic.common.FeatureSet;
-import com.spotify.heroic.filter.Filter;
-import com.spotify.heroic.metric.MetricType;
 import lombok.Data;
 
-import java.util.Optional;
-
 @Data
-public class Query {
-    private final Optional<Aggregation> aggregation;
-    private final Optional<MetricType> source;
-    private final Optional<QueryDateRange> range;
-    private final Optional<Filter> filter;
-    private final Optional<QueryOptions> options;
-    /* set of experimental features to enable */
-    private final Optional<FeatureSet> features;
-    private Optional<QueryRequestMetadata> requestMetadata =
-                                                    Optional.of(new QueryRequestMetadata());
+public class QueryRequestMetadata {
+    private final String  remoteAddr;
+    private final String  remoteHost;
+    private final int     remotePort;
+    private final String  remoteUserAgent;
+
+    public QueryRequestMetadata() {
+        remoteAddr = "";
+        remoteHost = "";
+        remotePort = 0;
+        remoteUserAgent = "";
+    }
+
+    public QueryRequestMetadata(final String  remoteAddr,
+                                final String  remoteHost,
+                                final int     remotePort,
+                                final String  remoteUserAgent) {
+        this.remoteAddr = remoteAddr;
+        this.remoteHost = remoteHost;
+        this.remotePort = remotePort;
+        this.remoteUserAgent = remoteUserAgent;
+    }
 }

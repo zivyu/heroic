@@ -23,17 +23,26 @@ package com.spotify.heroic.metric;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.spotify.heroic.QueryRequestMetadata;
 import com.spotify.heroic.aggregation.AggregationCombiner;
 import com.spotify.heroic.common.DateRange;
 import com.spotify.heroic.common.OptionalLimit;
 import eu.toolchain.async.Collector;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+@Slf4j
 @Data
 public class QueryResult {
+    private static Logger queryLog = LoggerFactory.getLogger("query.log");
+
     /**
      * The range in which all result groups metric's should be contained in.
      */
@@ -58,6 +67,11 @@ public class QueryResult {
 
     private final ResultLimits limits;
 
+    private static LongAdder totalQueriesProcessed = new LongAdder();
+
+    // Use AtomicLong since every time we do this we'll also read the value, so LongAdder is no use
+    private static AtomicLong queriesAboveThreshold = new AtomicLong();
+
     /**
      * Collect result parts into a complete result.
      *
@@ -66,7 +80,12 @@ public class QueryResult {
      */
     public static Collector<QueryResultPart, QueryResult> collectParts(
         final QueryTrace.Identifier what, final DateRange range, final AggregationCombiner combiner,
-        final OptionalLimit groupLimit
+        final OptionalLimit groupLimit,
+        final FullQuery.Request request,
+        final QueryRequestMetadata requestMetadata,
+        final boolean logQueries,
+        final OptionalLimit logQueriesThresholdDataPoints
+
     ) {
         final QueryTrace.NamedWatch w = QueryTrace.watch(what);
 
@@ -95,8 +114,51 @@ public class QueryResult {
                 limits.add(ResultLimit.GROUP);
             }
 
-            return new QueryResult(range, groupLimit.limitList(groups), errors, trace,
-                new ResultLimits(limits.build()));
+            QueryResult queryResult = new QueryResult(range, groupLimit.limitList(groups), errors,
+                                                      trace, new ResultLimits(limits.build()));
+
+            queryResult.logQueryInfo(request, requestMetadata,
+                                     logQueries, logQueriesThresholdDataPoints);
+
+            return queryResult;
         };
     }
+
+    public void logQueryInfo(final FullQuery.Request request,
+                             final QueryRequestMetadata requestMetadata,
+                             final boolean logQueries,
+                             final OptionalLimit logQueriesThresholdDataPoints
+    ) {
+        if (!logQueries) {
+            return;
+        }
+
+        totalQueriesProcessed.increment();
+
+        long totDataPoints = 0;
+        for (ShardedResultGroup g : groups) {
+            totDataPoints += g.getMetrics().getData().size();
+        }
+
+        if (totDataPoints < logQueriesThresholdDataPoints.orElse(
+                                    OptionalLimit.of(0)).asLong().get()) {
+            return;
+        }
+
+        long currQueriesAboveThreshold = queriesAboveThreshold.incrementAndGet();
+
+        boolean isIPv6 = requestMetadata.getRemoteAddr().indexOf(':') != -1;
+        queryLog.debug("[Query] (" + currQueriesAboveThreshold + "/" + totalQueriesProcessed + ")" +
+                       " elapsed:" + trace.getElapsed() +
+                       " total:" + totDataPoints +
+                       " total/s:" + (trace.getElapsed() == 0 ?
+                                      "NaN" : (1000000 * totDataPoints) / trace.getElapsed()) +
+                       " from:" +
+                       (isIPv6 ? "[" : "") + requestMetadata.getRemoteAddr() + (isIPv6 ? "]" : "") +
+                       ":" + requestMetadata.getRemotePort() +
+                       "(" + requestMetadata.getRemoteHost() + ")" +
+                       " User-Agent:" + requestMetadata.getRemoteUserAgent() +
+                       " --- " + request.toString() + " ---");
+    }
+
 }
