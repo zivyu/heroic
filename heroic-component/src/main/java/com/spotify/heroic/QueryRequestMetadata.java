@@ -25,25 +25,29 @@ import lombok.Data;
 
 @Data
 public class QueryRequestMetadata {
-    private final String  remoteAddr;
-    private final String  remoteHost;
-    private final int     remotePort;
-    private final String  remoteUserAgent;
+    private final String remoteAddr;
+    private final String remoteHost;
+    private final int    remotePort;
+    private final String remoteUserAgent;
+    private final String remoteClientId;
 
     public QueryRequestMetadata() {
         remoteAddr = "";
         remoteHost = "";
         remotePort = 0;
         remoteUserAgent = "";
+        remoteClientId = "";
     }
 
     public QueryRequestMetadata(final String  remoteAddr,
                                 final String  remoteHost,
                                 final int     remotePort,
-                                final String  remoteUserAgent) {
+                                final String  remoteUserAgent,
+                                final String  remoteClientId) {
         this.remoteAddr = remoteAddr;
         this.remoteHost = remoteHost;
         this.remotePort = remotePort;
         this.remoteUserAgent = remoteUserAgent;
+        this.remoteClientId = remoteClientId;
     }
 }

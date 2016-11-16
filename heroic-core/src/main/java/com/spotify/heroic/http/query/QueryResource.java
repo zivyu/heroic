@@ -72,7 +72,7 @@ public class QueryResource {
         @Context HttpServletRequest servletRequest, String query
     ) {
         final Query q = this.query.newQueryFromString(query).build();
-        q.setRequestMetadata(Optional.of(QueryHttpRequestMetadata.of(servletRequest)));
+        q.setRequestMetadata(Optional.of(CoreQueryRequestMetadataFactory.create(servletRequest)));
 
         final QueryManager.Group g = this.query.useOptionalGroup(Optional.ofNullable(group));
         final AsyncFuture<QueryResult> callback = g.query(q);
@@ -88,7 +88,7 @@ public class QueryResource {
         @Context HttpServletRequest servletRequest, QueryMetrics query
     ) {
         final Query q = query.toQueryBuilder(this.query::newQueryFromString).build();
-        q.setRequestMetadata(Optional.of(QueryHttpRequestMetadata.of(servletRequest)));
+        q.setRequestMetadata(Optional.of(CoreQueryRequestMetadataFactory.create(servletRequest)));
 
         final QueryManager.Group g = this.query.useOptionalGroup(Optional.ofNullable(group));
         final AsyncFuture<QueryResult> callback = g.query(q);
@@ -113,7 +113,8 @@ public class QueryResource {
                     .toQueryBuilder(this.query::newQueryFromString)
                     .rangeIfAbsent(query.getRange())
                     .build();
-                q.setRequestMetadata(Optional.of(QueryHttpRequestMetadata.of(servletRequest)));
+                q.setRequestMetadata(Optional.of(CoreQueryRequestMetadataFactory.
+                    create(servletRequest)));
 
                 futures.add(g.query(q).directTransform(r -> Pair.of(e.getKey(), r)));
             }

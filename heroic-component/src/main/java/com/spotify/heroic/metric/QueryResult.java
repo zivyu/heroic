@@ -28,6 +28,11 @@ import com.spotify.heroic.aggregation.AggregationCombiner;
 import com.spotify.heroic.common.DateRange;
 import com.spotify.heroic.common.OptionalLimit;
 import eu.toolchain.async.Collector;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 import lombok.Data;
@@ -129,36 +134,97 @@ public class QueryResult {
                              final boolean logQueries,
                              final OptionalLimit logQueriesThresholdDataPoints
     ) {
+        log.info("QueryResult:logQueryInfo entering");
         if (!logQueries) {
+            log.info("QueryResult:logQueryInfo won't log queries");
             return;
         }
 
         totalQueriesProcessed.increment();
 
-        long totDataPoints = 0;
+        long totalDataPoints = 0;
         for (ShardedResultGroup g : groups) {
-            totDataPoints += g.getMetrics().getData().size();
+            totalDataPoints += g.getMetrics().getData().size();
         }
 
-        if (totDataPoints < logQueriesThresholdDataPoints.orElse(
+        if (totalDataPoints < logQueriesThresholdDataPoints.orElse(
                                     OptionalLimit.of(0)).asLong().get()) {
+            log.info("QueryResult:logQueryInfo Won't log because of threshold");
             return;
         }
 
         long currQueriesAboveThreshold = queriesAboveThreshold.incrementAndGet();
 
+        TimeZone tz = TimeZone.getTimeZone("UTC");
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+        dateFormat.setTimeZone(tz);
+        String currentTimeAsISO = dateFormat.format(new Date());
+
         boolean isIPv6 = requestMetadata.getRemoteAddr().indexOf(':') != -1;
-        queryLog.debug("[Query] (" + currQueriesAboveThreshold + "/" + totalQueriesProcessed + ")" +
-                       " elapsed:" + trace.getElapsed() +
-                       " total:" + totDataPoints +
-                       " total/s:" + (trace.getElapsed() == 0 ?
-                                      "NaN" : (1000000 * totDataPoints) / trace.getElapsed()) +
-                       " from:" +
-                       (isIPv6 ? "[" : "") + requestMetadata.getRemoteAddr() + (isIPv6 ? "]" : "") +
-                       ":" + requestMetadata.getRemotePort() +
-                       "(" + requestMetadata.getRemoteHost() + ")" +
-                       " User-Agent:" + requestMetadata.getRemoteUserAgent() +
-                       " --- " + request.toString() + " ---");
+        String json = "{" +
+                      " \"@timestamp\": \"" + currentTimeAsISO + "\"," +
+                      " \"@message\": {" +
+                      " \"numQueriesAboveThreshold\": " + currQueriesAboveThreshold + "," +
+                      " \"totalQueries\": " + totalQueriesProcessed + "," +
+                      " \"numDataPoints\": " + totalDataPoints + "," +
+                      " \"elapsed\": " + trace.getElapsed() + "," +
+                      " \"total/s\": " + (trace.getElapsed() == 0 ?
+                                          0 : (1000000 * totalDataPoints) / trace.getElapsed()) +
+                      "," +
+                      " \"trace.what\": \"" + trace.getWhat().toString() + "\"," +
+                      " \"preAggregationSampleSize\": " + trace.getPreAggregationSampleSize() +
+                      "," +
+                      " \"numSeries\": " + trace.getNumSeries() + "," +
+                      " \"fromIP\": \"" +
+                      (isIPv6 ? "[" : "") + requestMetadata.getRemoteAddr() + (isIPv6 ? "]" : "") +
+                      ":" + requestMetadata.getRemotePort() + "\"" + "," +
+                      " \"fromHost\": \"" + requestMetadata.getRemoteHost() + "\"," +
+                      " \"user-agent\": \"" + requestMetadata.getRemoteUserAgent() + "\"," +
+                      " \"client-id\": \"" + requestMetadata.getRemoteClientId() + "\"," +
+                      " \"query\": \"" + escapeForJSON(request.toString()) + "\"," +
+                      " \"children\": [";
+
+        json += jsonForQueryTraceChildren(trace.getChildren());
+
+        json += "]";
+        json += "}";
+        json += "}";
+
+        queryLog.info(json);
     }
 
+    public String jsonForQueryTraceChildren(final List<QueryTrace> children) {
+
+        String out = new String();
+        Iterator<QueryTrace> iterator = children.iterator();
+        while (iterator.hasNext()) {
+            QueryTrace child = iterator.next();
+            out += "{" +
+                   " \"what\": \"" + child.getWhat().toString() + "\"," +
+                   " \"elapsed\": " + child.getElapsed() + "," +
+                   " \"preAggregationSampleSize\": " + child.getPreAggregationSampleSize() +
+                   "," +
+                   " \"numSeries\": " + child.getNumSeries() + "," +
+                   " \"children\": [";
+            out += jsonForQueryTraceChildren(child.getChildren());
+            out += "]";
+            out += "}";
+            out += (iterator.hasNext() ? ", " : "");
+        }
+        return out;
+    }
+
+    public String escapeForJSON(String s) {
+        String out = new String();
+        for (char c : s.toCharArray()) {
+            if (c == '"') {
+                out += "\\\"";
+            } else if (c == '\\') {
+                out += "\\\\";
+            } else {
+                out += c;
+            }
+        }
+        return out;
+    }
 }

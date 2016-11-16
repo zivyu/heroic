@@ -24,21 +24,16 @@ package com.spotify.heroic.http.query;
 import com.spotify.heroic.QueryRequestMetadata;
 import javax.servlet.http.HttpServletRequest;
 
-public class QueryHttpRequestMetadata extends QueryRequestMetadata {
+public class CoreQueryRequestMetadataFactory {
 
-    public QueryHttpRequestMetadata(final String  remoteAddr,
-                                    final String  remoteHost,
-                                    final int     remotePort,
-                                    final String  remoteUserAgent) {
-        super(remoteAddr, remoteHost, remotePort, remoteUserAgent);
-    }
-
-    public static QueryHttpRequestMetadata of(HttpServletRequest httpServletRequest) {
-        return new QueryHttpRequestMetadata(httpServletRequest.getRemoteAddr(),
-                                            httpServletRequest.getRemoteHost(),
-                                            httpServletRequest.getRemotePort(),
-                                            (httpServletRequest.getHeader("User-Agent") != null) ?
-                                                httpServletRequest.getHeader("User-Agent") : "");
+    public static QueryRequestMetadata create(HttpServletRequest httpServletRequest) {
+        String userAgent = httpServletRequest.getHeader("User-Agent");
+        String clientId = httpServletRequest.getHeader("X-Alient-Client-Id");
+        return new QueryRequestMetadata(httpServletRequest.getRemoteAddr(),
+                                        httpServletRequest.getRemoteHost(),
+                                        httpServletRequest.getRemotePort(),
+                                        userAgent == null ? "" : userAgent,
+                                        clientId == null ? "" : clientId);
     }
 
 }
