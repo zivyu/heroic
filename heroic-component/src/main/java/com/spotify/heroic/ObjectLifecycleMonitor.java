@@ -33,6 +33,8 @@ import java.lang.ref.WeakReference;
 import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -45,25 +47,26 @@ import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
 
 
-public class ObjectLifecycleMonitorSingleton {
-
-    static ObjectLifecycleMonitor monitor = new ObjectLifecycleMonitor();
-    ObjectLifecycleMonitor getMonitor() {
-        return monitor;
-    }
-}
-
 @Slf4j
 @Data
 public class ObjectLifecycleMonitor extends Thread {
-    private final AsyncFramework async;
-    private final CountDownLatch pleaseStop = new CountDownLatch(1);
-    protected final ResolvableFuture<Void> hasStopped;
+    private static Semaphore isInitializing;
+    private static ObjectLifecycleMonitor singleton;
 
+    public static ObjectLifecycleMonitor provider() {
+        synchronized (isInitializing) {
+            if (singleton == null) {
+                singleton = new ObjectLifecycleMonitor();
+            }
+        }
+        return singleton;
+    }
+    private final CountDownLatch pleaseStop = new CountDownLatch(1);
+
+    
     ConcurrentHashMap<Object, ObjectMetadata> objectRegistry;
     ReferenceQueue<Object> deadReferenceQueue;
 
-    public ObjectLifecycleMonitor
     public void registerObject(Object object, String description, long numBytes) {
         ObjectMetadata m = new ObjectMetadata(description, numBytes, System.currentTimeMillis(), 0, 0);
 
@@ -102,9 +105,11 @@ public class ObjectLifecycleMonitor extends Thread {
             log.info("Object is getting ready for GC:");
             m.dumpToLog();
 
+            log.info("Call stack:\n" + Thread.currentThread().getStackTrace().toString());
+
             objectRegistry.remove(deadObject);
         }
-        hasStopped.resolve(null);
+        //hasStopped.resolve(null);
     }
 
     void periodicLogDump() {
@@ -117,7 +122,6 @@ public class ObjectLifecycleMonitor extends Thread {
         }
     }
 
-    @Slf4j
     @AllArgsConstructor
     @Data
     class ObjectMetadata {
