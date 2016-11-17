@@ -68,10 +68,16 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @see MetricGroup
  */
 @Data
-@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
+//@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public abstract class MetricCollection {
     final MetricType type;
     final List<? extends Metric> data;
+
+    MetricCollection(final MetricType type, final List<? extends Metric> data) {
+        this.type = type;
+        this.data = data;
+
+    }
 
     /**
      * Helper method to fetch a collection of the given type, if applicable.
