@@ -68,4 +68,16 @@ public class MetricGroup implements Metric {
     public boolean valid() {
         return true;
     }
+
+    @Override
+    public long inMemoryByteSize() {
+        long numBytes = 8;
+        for (final MetricCollection c : groups) {
+            for (final Metric m : c.getData()) {
+                numBytes += m.inMemoryByteSize();
+            }
+        }
+        return numBytes;
+    }
+
 }

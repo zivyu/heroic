@@ -32,6 +32,8 @@ public interface Metric {
 
     void hash(Hasher hasher);
 
+    long inMemoryByteSize();
+
     static Comparator<Metric> comparator() {
         return comparator;
     }
@@ -55,6 +57,11 @@ public interface Metric {
 
         @Override
         public void hash(final Hasher hasher) {
+        }
+
+        @Override
+        public long inMemoryByteSize() {
+            return 0;
         }
     };
 }

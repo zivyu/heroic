@@ -53,4 +53,10 @@ public class Payload implements Metric {
         hasher.putInt(MetricType.EVENT.ordinal());
         hasher.putBytes(state);
     }
+
+    @Override
+    public long inMemoryByteSize() {
+        return 8 + state.length;
+    }
+
 }

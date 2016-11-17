@@ -64,4 +64,9 @@ public class Spread implements Metric {
         hasher.putDouble(min);
         hasher.putDouble(max);
     }
+
+    @Override
+    public long inMemoryByteSize() {
+        return 8 * 6;
+    }
 }

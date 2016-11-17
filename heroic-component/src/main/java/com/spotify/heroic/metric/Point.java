@@ -41,4 +41,9 @@ public class Point implements Metric {
         hasher.putInt(MetricType.POINT.ordinal());
         hasher.putDouble(value);
     }
+
+    @Override
+    public long inMemoryByteSize() {
+        return 8 + 8;
+    }
 }

@@ -26,6 +26,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.spotify.heroic.aggregation.AggregationSession;
 import com.spotify.heroic.common.Series;
+import dagger.Module;
+import dagger.Provides;
 import eu.toolchain.async.AsyncFramework;
 import eu.toolchain.async.ResolvableFuture;
 import java.lang.ref.ReferenceQueue;
@@ -35,6 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.LongAdder;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -46,32 +49,38 @@ import java.util.Set;
 import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
 
-
+@Module
 @Slf4j
 @Data
 public class ObjectLifecycleMonitor extends Thread {
-    private static Semaphore isInitializing;
-    private static ObjectLifecycleMonitor singleton;
+    static final boolean LOG_OBJECT_DESTRUCTION = true;
+    static final boolean PERIODIC_LOG_OF_STATISTICS = true;
+    static final boolean PERIODIC_LOG_OF_FULL_LIST = true;
 
-    public static ObjectLifecycleMonitor provider() {
-        synchronized (isInitializing) {
-            if (singleton == null) {
-                singleton = new ObjectLifecycleMonitor();
-            }
-        }
-        return singleton;
-    }
     private final CountDownLatch pleaseStop = new CountDownLatch(1);
 
-    
-    ConcurrentHashMap<Object, ObjectMetadata> objectRegistry;
-    ReferenceQueue<Object> deadReferenceQueue;
+    LongAdder totalByteCount = new LongAdder();
+    ConcurrentHashMap<Object, ObjectMetadata> objectRegistry = new ConcurrentHashMap<>();
+    ReferenceQueue<Object> deadReferenceQueue = new ReferenceQueue<>();
+
+    public ObjectLifecycleMonitor() {
+        start();
+    }
 
     public void registerObject(Object object, String description, long numBytes) {
         ObjectMetadata m = new ObjectMetadata(description, numBytes, System.currentTimeMillis(), 0, 0);
 
         WeakReference<Object> weakReference = new WeakReference<Object>(object, deadReferenceQueue);
+        objectRegistry.put(weakReference, m);
+
+        totalByteCount.add(numBytes);
     }
+
+    public void objectIsFinalized(Object object) {
+        log.info("Object is finalized:" + object.toString());
+        log.info("Call stack:\n" + Thread.currentThread().getStackTrace().toString());
+    }
+
 
     public void run() {
         long lastLogTime = System.currentTimeMillis();
@@ -102,11 +111,20 @@ public class ObjectLifecycleMonitor extends Thread {
             // An object has no strong references and will be GC:d soon
             m.setNoLongerReferencedTime(System.currentTimeMillis());
 
-            log.info("Object is getting ready for GC:");
-            m.dumpToLog();
+            if (LOG_OBJECT_DESTRUCTION) {
+                log.info("Object is getting ready for GC:");
+                m.dumpToLog();
 
-            log.info("Call stack:\n" + Thread.currentThread().getStackTrace().toString());
+                log.info("Call stack:\n" + Thread.currentThread().getStackTrace());
+                StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+                int numPrinted = 0;
+                while (numPrinted < stackTraceElements.length && numPrinted < 10) {
+                    log.info("  " + stackTraceElements[numPrinted].toString());
+                    numPrinted++;
+                }
+            }
 
+            totalByteCount.add( - m.numBytes);
             objectRegistry.remove(deadObject);
         }
         //hasStopped.resolve(null);
@@ -114,11 +132,16 @@ public class ObjectLifecycleMonitor extends Thread {
 
     void periodicLogDump() {
         long currTime = System.currentTimeMillis();
-        Enumeration<ObjectMetadata> e = objectRegistry.elements();
-        log.info("Periodic dump of tracked in-memory objects: num:" + objectRegistry.size());
-        while (e.hasMoreElements()) {
-            ObjectMetadata m = e.nextElement();
-            m.dumpToLog(currTime);
+        if (PERIODIC_LOG_OF_STATISTICS) {
+            log.info("Tracked in-memory objects: num:" + objectRegistry.size() +
+                     " totalBytes:" + totalByteCount.longValue());
+        }
+        if (PERIODIC_LOG_OF_FULL_LIST) {
+            Enumeration<ObjectMetadata> e = objectRegistry.elements();
+            while (e.hasMoreElements()) {
+                ObjectMetadata m = e.nextElement();
+                m.dumpToLog(currTime);
+            }
         }
     }
 
@@ -138,8 +161,8 @@ public class ObjectLifecycleMonitor extends Thread {
         public void dumpToLog(long currTime) {
             log.info("  \"" + description + "\": bytes:" + numBytes +
                      " lifetime(ms):" + (currTime - creationTime) +
-                     " strongReferenced:" + (noLongerReferencedTime == 0 ? "true" : "false") +
-                     " weakReferenceTime(ms):" + (currTime - noLongerReferencedTime));
+                     " stronglyReferenced:" + (noLongerReferencedTime == 0 ? "true" : "false weakReferenceTime:" + (currTime - noLongerReferencedTime))
+            );
         }
     }
 }

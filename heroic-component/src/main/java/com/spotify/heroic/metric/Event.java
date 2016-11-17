@@ -26,6 +26,9 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
 import com.google.common.hash.Hasher;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Set;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -61,5 +64,23 @@ public class Event implements Metric {
         for (final String k : KEY_ORDER.sortedCopy(payload.keySet())) {
             hasher.putString(k, Charsets.UTF_8).putString(payload.get(k), Charsets.UTF_8);
         }
+    }
+
+    @Override
+    public long inMemoryByteSize() {
+        Set<String> keys = payload.keySet();
+        Iterator<String> iter = keys.iterator();
+        long numBytes = 8;
+        while (iter.hasNext()) {
+            numBytes += iter.next().getBytes().length;
+        }
+
+        Collection values = payload.values();
+        iter = values.iterator();
+        while (iter.hasNext()) {
+            numBytes += iter.next().getBytes().length;
+        }
+
+        return numBytes;
     }
 }

@@ -25,6 +25,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.spotify.heroic.ObjectLifecycleMonitor;
+import com.spotify.heroic.ObjectLifecycleMonitorProvider;
 import com.spotify.heroic.aggregation.AggregationSession;
 import com.spotify.heroic.common.Series;
 import javax.inject.Inject;
@@ -73,17 +74,18 @@ import static com.google.common.base.Preconditions.checkNotNull;
 //@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public abstract class MetricCollection {
 
-    @Inject
-    public ObjectLifecycleMonitor objectLifecycleMonitor;
-
     final MetricType type;
     final List<? extends Metric> data;
 
     public MetricCollection(final MetricType type, final List<? extends Metric> data) {
         this.type = type;
         this.data = data;
-        // FIXME: correct byte count
-        objectLifecycleMonitor.registerObject(this, "MetricCollection", data.size());
+
+        long numBytes = 0;
+        for (Metric m : data) {
+            numBytes += m.inMemoryByteSize();
+        }
+        ObjectLifecycleMonitorProvider.get().registerObject(this, "MetricCollection#" + type.identifier(), numBytes);
     }
 
     /**
