@@ -22,20 +22,28 @@
 package com.spotify.heroic.async;
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * A type to encapsulate a value with two possibilities, A value, or an error.
  *
  * @param <T> The type of the value.
  */
+@Slf4j
 @Data
 public final class MaybeError<T> {
     private final boolean just;
     private final Object data;
+    private final Object error;
 
-    private MaybeError(boolean just, Object data) {
+    private MaybeError(boolean just, Object data, Object error) {
         this.just = just;
         this.data = data;
+        this.error = error;
+    }
+
+    private MaybeError(boolean just, Object data) {
+        this(just, data, null);
     }
 
     @SuppressWarnings("unchecked")
@@ -79,7 +87,17 @@ public final class MaybeError<T> {
      * @param error
      * @return
      */
-    public static <A> MaybeError<A> error(Throwable error) {
-        return new MaybeError<>(false, error);
+    public static <A> MaybeError<A> error(Throwable error, Object data) {
+        log.info("MaybeError:error() " + error.toString());
+        StackTraceElement[] ste = Thread.currentThread().getStackTrace();
+        for (StackTraceElement e : ste) {
+            log.info(" stack: " + e.toString());
+        }
+        return new MaybeError<>(false, data, error);
+    }
+
+    public String toString() {
+        return new String("just:" + (just?"true":"false") + " data:" + data + " error:" + error);
+
     }
 }

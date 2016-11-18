@@ -106,12 +106,15 @@ public class GrpcRpcProtocol implements RpcProtocol {
 
     @Override
     public AsyncFuture<ClusterNode> connect(final URI uri) {
+        log.info("GrpcRpcProtocol::connect() URI:" + uri.toString());
+
         final InetSocketAddress address =
             new InetSocketAddress(uri.getHost(), uri.getPort() == -1 ? defaultPort : uri.getPort());
 
         final Managed<ManagedChannel> channel = async.managed(new ManagedSetup<ManagedChannel>() {
             @Override
             public AsyncFuture<ManagedChannel> construct() throws Exception {
+                log.info("GrpcRpcProtocol:connect ManagedSetup:Construct() will create NettyChannelBuilder object for " + address.getHostName() + ":" + address.getPort());
                 final ManagedChannel channel = NettyChannelBuilder
                     .forAddress(address.getHostName(), address.getPort())
                     .usePlaintext(true)
@@ -124,7 +127,9 @@ public class GrpcRpcProtocol implements RpcProtocol {
 
             @Override
             public AsyncFuture<Void> destruct(final ManagedChannel value) throws Exception {
+                log.info("GrpcRpcProtocol:connect ManagedSetup:destruct " + address.getHostName() + ":" + address.getPort());
                 return async.call(() -> {
+                    log.info("GrpcRpcProtocol:connect ManagedSetup:destruct lambda " + address.getHostName() + ":" + address.getPort());
                     value.shutdown();
                     value.awaitTermination(10, TimeUnit.SECONDS);
                     return null;
@@ -133,6 +138,7 @@ public class GrpcRpcProtocol implements RpcProtocol {
         });
 
         return channel.start().lazyTransform(n -> {
+            log.info("GrpcRpcProtocol:connect channel.start().lazy" + address.getHostName() + ":" + address.getPort());
             final GrpcRpcClient client = new GrpcRpcClient(async, address, mapper, channel);
 
             return client
@@ -166,6 +172,7 @@ public class GrpcRpcProtocol implements RpcProtocol {
 
         @Override
         public AsyncFuture<NodeMetadata> fetchMetadata() {
+            log.info("GrpcRpcClusterNode:fetchMetadata, will request with 5s deadline");
             // metadata requests are also used as health checks, used a much smaller deadline.
             return client.request(METADATA,
                 CallOptions.DEFAULT.withDeadlineAfter(5, TimeUnit.SECONDS));
