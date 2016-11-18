@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import lombok.extern.slf4j.Slf4j;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -67,11 +68,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @see Event
  * @see MetricGroup
  */
+@Slf4j
 @Data
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public abstract class MetricCollection {
     final MetricType type;
     final List<? extends Metric> data;
+    static boolean fallbackToManualByteCounts = false;
 
     /**
      * Helper method to fetch a collection of the given type, if applicable.

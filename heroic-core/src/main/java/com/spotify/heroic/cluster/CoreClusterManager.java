@@ -33,6 +33,7 @@ import com.spotify.heroic.lifecycle.LifeCycles;
 import com.spotify.heroic.scheduler.Scheduler;
 import eu.toolchain.async.AsyncFramework;
 import eu.toolchain.async.AsyncFuture;
+import eu.toolchain.async.FutureResolved;
 import eu.toolchain.async.Transform;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -192,6 +193,7 @@ public class CoreClusterManager implements ClusterManager, LifeCycles {
                     if (node != null) {
                         final ClusterNode old = node;
 
+                        log.info("refresh() Will node.fetchMetadata()");
                         nodes.add(node.fetchMetadata().lazyTransform(m -> {
                             if (!node.metadata().equals(m)) {
                                 log.info("[new] {} (metadata mismatch)", uri);
@@ -199,10 +201,11 @@ public class CoreClusterManager implements ClusterManager, LifeCycles {
                             }
 
                             return async.resolved(MaybeError.just(old));
-                        }).catchFailed(MaybeError::error));
+                        }).catchFailed(t -> MaybeError.error(t, uri)));
                     } else {
                         log.info("[new] {}", uri);
 
+                        log.info("refresh() /* resolve new node */");
                         /* resolve new node */
                         nodes.add(tryCreateClusterNode(uri));
                     }
@@ -220,12 +223,35 @@ public class CoreClusterManager implements ClusterManager, LifeCycles {
             }
 
             return async.collect(nodes).lazyTransform(newNodes -> {
+
+                log.info("refresh() newNodes:");
+                newNodes.stream().forEach(n -> {
+                    log.info("node: just:" + n.toString());
+                });
+
                 final Set<ClusterNode> entries = new HashSet<>();
                 final List<Throwable> failures = new ArrayList<>();
 
                 for (final MaybeError<ClusterNode> maybe : newNodes) {
                     if (maybe.isError()) {
-                        failures.add(maybe.getError());
+                        URI uri = (URI)maybe.getData();
+                        log.info("Will remove node with URI " + uri.toString());
+                        final ClusterNode removedNode = clients.remove(uri);
+                        removed.add(Pair.of(uri, removedNode::close));
+
+                        //failures.add(maybe.getError());
+
+                        /*
+                        final Set<URI> removedNodes = new HashSet<>(clients.keySet());
+
+                        for (final URI uri : uris) {
+                            final ClusterNode node = clients.get(uri);
+                            if (node.equals(maybe.getJust())) {
+                                removed.add(Pair.of(uri, maybe.getJust()::close));
+                                break;
+                            }
+                        }
+                        */
                     } else {
                         entries.add(maybe.getJust());
                     }
@@ -254,6 +280,7 @@ public class CoreClusterManager implements ClusterManager, LifeCycles {
                     /* shutdown removed node */
                 return async.collectAndDiscard(removed.stream().map(r -> {
                     final URI uri = r.getLeft();
+                    log.info("Removing URI: " + uri.toString());
 
                     return r.getRight().get().catchFailed(e -> {
                         log.error("[remove] {} (stop failed)", uri, e);
@@ -297,7 +324,7 @@ public class CoreClusterManager implements ClusterManager, LifeCycles {
 
         if (!options.isOneshot()) {
             startup = context.startedFuture().directTransform(result -> {
-                scheduler.periodically("cluster-refresh", 1, TimeUnit.MINUTES,
+                scheduler.periodically("cluster-refresh", 7, TimeUnit.SECONDS,
                     () -> refresh().get());
 
                 return null;
@@ -352,7 +379,7 @@ public class CoreClusterManager implements ClusterManager, LifeCycles {
     private Transform<Throwable, MaybeError<ClusterNode>> handleError(final URI uri) {
         return error -> {
             log.error("Failed to connect {}", uri, error);
-            return MaybeError.error(error);
+            return MaybeError.error(error, uri);
         };
     }
 
@@ -374,7 +401,16 @@ public class CoreClusterManager implements ClusterManager, LifeCycles {
             }
 
             return async.resolved(newNode);
-        }).directTransform(MaybeError::just).catchFailed(MaybeError::error);
+        }).directTransform(MaybeError::just).catchFailed(
+            new Transform<Throwable, MaybeError<ClusterNode>>() {
+                @Override
+                public MaybeError<ClusterNode> transform(Throwable result) throws Exception {
+                    return MaybeError.error(result, uri);
+                }
+            });
+
+            // onFailed(f -> MaybeError.error(f, uri));
+
     }
 
     /**

@@ -21,12 +21,19 @@
 
 package com.spotify.heroic;
 
+import com.google.appengine.repackaged.com.google.common.collect.ImmutableList;
 import com.spotify.heroic.HeroicCore.Builder;
 import com.spotify.heroic.args4j.CmdLine;
+import com.spotify.heroic.metric.Event;
+import com.spotify.heroic.metric.MetricGroup;
+import com.spotify.heroic.metric.Point;
+import com.spotify.heroic.metric.Spread;
+import com.spotify.heroic.metric.Payload;
 import com.spotify.heroic.reflection.ResourceException;
 import com.spotify.heroic.reflection.ResourceFileLoader;
 import com.spotify.heroic.reflection.ResourceInstance;
 import eu.toolchain.async.Transform;
+import java.lang.instrument.Instrumentation;
 import lombok.Data;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;

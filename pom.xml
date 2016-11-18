@@ -803,6 +803,12 @@
                   </filter>
                 </filters>
                 <transformers>
+                  <!-- premain implementation, to get access to java.lang.instrument.Instrumentation -->
+                  <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                    <manifestEntries>
+                      <Premain-Class>com.spotify.heroic.HeroicInstrumentation</Premain-Class>
+                    </manifestEntries>
+                  </transformer>
                   <!-- required for lucene -->
                   <transformer
                       implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
