@@ -26,15 +26,12 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.spotify.heroic.HeroicConfiguration;
 import com.spotify.heroic.HeroicContext;
-import com.spotify.heroic.async.MaybeError;
 import com.spotify.heroic.common.OptionalLimit;
 import com.spotify.heroic.lifecycle.LifeCycleRegistry;
 import com.spotify.heroic.lifecycle.LifeCycles;
 import com.spotify.heroic.scheduler.Scheduler;
 import eu.toolchain.async.AsyncFramework;
 import eu.toolchain.async.AsyncFuture;
-import eu.toolchain.async.FutureResolved;
-import eu.toolchain.async.Transform;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -177,18 +174,19 @@ public class CoreClusterManager implements ClusterManager, LifeCycles {
 
         dynamic.add(discovery.find());
 
-        return async.collect(dynamic).lazyTransform(lists -> {
-            final List<URI> uris = ImmutableList.copyOf(Iterables.concat(lists));
+        return async.collect(dynamic).lazyTransform(staticNodeList -> {
+            final List<URI> uris = ImmutableList.copyOf(Iterables.concat(staticNodeList));
 
-            final List<AsyncFuture<MaybeError<ClusterNode>>> nodes = new ArrayList<>();
+            //final List<AsyncFuture<MaybeError<ClusterNode>>> _nodes = new ArrayList<>();
+            final List<AsyncFuture<ClusterNodeConnectionStatus>> nodes = new ArrayList<>();
             final List<Pair<URI, Supplier<AsyncFuture<Void>>>> removed = new ArrayList<>();
 
             synchronized (lock) {
-                final Set<URI> removedNodes = new HashSet<>(clients.keySet());
+                final Set<URI> uncheckedNodes = new HashSet<>(clients.keySet());
 
                 for (final URI uri : uris) {
                     final ClusterNode node = clients.get(uri);
-                    removedNodes.remove(uri);
+                    uncheckedNodes.remove(uri);
 
                     if (node != null) {
                         final ClusterNode old = node;
@@ -197,11 +195,13 @@ public class CoreClusterManager implements ClusterManager, LifeCycles {
                         nodes.add(node.fetchMetadata().lazyTransform(m -> {
                             if (!node.metadata().equals(m)) {
                                 log.info("[new] {} (metadata mismatch)", uri);
+                                // Node changed, create new node object for it
                                 return tryCreateClusterNode(uri);
                             }
 
-                            return async.resolved(MaybeError.just(old));
-                        }).catchFailed(t -> MaybeError.error(t, uri)));
+                            // Node is unchanged, use old node object
+                            return async.resolved(ClusterNodeConnectionStatus.ok(uri, old));
+                        }).catchFailed(throwable -> ClusterNodeConnectionStatus.error(uri, throwable)));
                     } else {
                         log.info("[new] {}", uri);
 
@@ -211,7 +211,7 @@ public class CoreClusterManager implements ClusterManager, LifeCycles {
                     }
                 }
 
-                for (final URI uri : removedNodes) {
+                for (final URI uri : uncheckedNodes) {
                     log.info("[remove] {}", uri);
 
                     final ClusterNode remove = clients.remove(uri);
@@ -222,41 +222,30 @@ public class CoreClusterManager implements ClusterManager, LifeCycles {
                 }
             }
 
-            return async.collect(nodes).lazyTransform(newNodes -> {
+            return async.collect(nodes).lazyTransform(newNodesConnectionStatus -> {
 
                 log.info("refresh() newNodes:");
-                newNodes.stream().forEach(n -> {
+                newNodesConnectionStatus.stream().forEach(n -> {
                     log.info("node: just:" + n.toString());
                 });
 
                 final Set<ClusterNode> entries = new HashSet<>();
                 final List<Throwable> failures = new ArrayList<>();
 
-                for (final MaybeError<ClusterNode> maybe : newNodes) {
-                    if (maybe.isError()) {
-                        URI uri = (URI)maybe.getData();
-                        log.info("Will remove node with URI " + uri.toString());
-                        final ClusterNode removedNode = clients.remove(uri);
-                        if (removedNode != null) {
-                            log.info("removedNode was null");
-                            removed.add(Pair.of(uri, removedNode::close));
-                        }
+                for (final ClusterNodeConnectionStatus connectionStatus : newNodesConnectionStatus) {
+                    if (!connectionStatus.isError()) {
+                        // Node with OK status, add to entries
+                        entries.add(connectionStatus.getClusterNode());
+                        continue;
+                    }
 
-                        //failures.add(maybe.getError());
-
-                        /*
-                        final Set<URI> removedNodes = new HashSet<>(clients.keySet());
-
-                        for (final URI uri : uris) {
-                            final ClusterNode node = clients.get(uri);
-                            if (node.equals(maybe.getJust())) {
-                                removed.add(Pair.of(uri, maybe.getJust()::close));
-                                break;
-                            }
-                        }
-                        */
-                    } else {
-                        entries.add(maybe.getJust());
+                    // Failed node
+                    URI uri = connectionStatus.getUri();
+                    log.info("Will remove node with URI " + uri.toString());
+                    final ClusterNode removedNode = clients.remove(uri);
+                    if (removedNode != null) {
+                        log.info("removedNode was not null");
+                        removed.add(Pair.of(uri, removedNode::close));
                     }
                 }
 
@@ -379,14 +368,16 @@ public class CoreClusterManager implements ClusterManager, LifeCycles {
         return knownShards;
     }
 
+    /*
     private Transform<Throwable, MaybeError<ClusterNode>> handleError(final URI uri) {
         return error -> {
             log.error("Failed to connect {}", uri, error);
             return MaybeError.error(error, uri);
         };
     }
+    */
 
-    private AsyncFuture<MaybeError<ClusterNode>> tryCreateClusterNode(final URI uri) {
+    private AsyncFuture<ClusterNodeConnectionStatus> tryCreateClusterNode(final URI uri) {
         return createClusterNode(uri).lazyTransform(newNode -> {
             if (useLocal && localMetadata.getId().equals(newNode.metadata().getId())) {
                 log.info("Using local instead of {} (closing old node)", newNode);
@@ -395,23 +386,25 @@ public class CoreClusterManager implements ClusterManager, LifeCycles {
                     clients.put(uri, local);
                 }
 
-                // close old node
-                return newNode.close().directTransform(v -> local);
+                // close old node and replace with local
+                return newNode.close().directTransform(voidVal -> ClusterNodeConnectionStatus.ok(uri, local));
             }
 
             synchronized (lock) {
                 clients.put(uri, newNode);
             }
 
-            return async.resolved(newNode);
-        }).directTransform(MaybeError::just).catchFailed(
+            // Use new node
+            return async.resolved(ClusterNodeConnectionStatus.ok(uri, newNode));
+        }).catchFailed(throwable -> ClusterNodeConnectionStatus.error(uri, throwable));
+            /* directTransform(MaybeError::just).catchFailed(
             new Transform<Throwable, MaybeError<ClusterNode>>() {
                 @Override
                 public MaybeError<ClusterNode> transform(Throwable result) throws Exception {
                     return MaybeError.error(result, uri);
                 }
             });
-
+            */
             // onFailed(f -> MaybeError.error(f, uri));
 
     }
