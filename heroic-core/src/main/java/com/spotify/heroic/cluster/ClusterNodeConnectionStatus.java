@@ -30,26 +30,30 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 @AllArgsConstructor
 class ClusterNodeConnectionStatus {
-    private boolean isConnected;
     private boolean isError;
     private ClusterNode clusterNode;
     private URI uri;
     private Throwable error;
 
     public ClusterNodeConnectionStatus() {
-        isConnected = false;
         isError = false;
         clusterNode = null;
         uri = null;
         error = null;
     }
 
-    public static ClusterNodeConnectionStatus error(URI _uri, Throwable _throwable) {
-        return new ClusterNodeConnectionStatus(false, true, null, _uri, _throwable);
+    public static ClusterNodeConnectionStatus error(URI uri, Throwable throwable) {
+        return new ClusterNodeConnectionStatus(true, null, uri, throwable);
     }
 
-    public static ClusterNodeConnectionStatus ok(URI _uri, ClusterNode _node) {
-        return new ClusterNodeConnectionStatus(true, false, _node, _uri, null);
+    public static ClusterNodeConnectionStatus ok(URI uri, ClusterNode node) {
+        return new ClusterNodeConnectionStatus(false, node, uri, null);
+    }
+
+    public String toString() {
+        return new String("URI:" + uri +
+                          " status:" + (!isError ? "<OK>" : "<ERROR> error:" + error) +
+                          "clusterNode:" + (clusterNode == null ? "null" : "<object>"));
     }
 }
 

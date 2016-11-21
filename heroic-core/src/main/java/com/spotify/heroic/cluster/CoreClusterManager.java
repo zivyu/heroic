@@ -211,6 +211,11 @@ public class CoreClusterManager implements ClusterManager, LifeCycles {
                     }
                 }
 
+                /*
+                 * Any nodes that wasn't in the static node list will now be left in uncheckedNodes.
+                 * Let's remove them from "clients". This code path adds support for changing the
+                 * static node list in runtime even tho we don't currently do that.
+                 */
                 for (final URI uri : uncheckedNodes) {
                     log.info("[remove] {}", uri);
 
@@ -226,7 +231,7 @@ public class CoreClusterManager implements ClusterManager, LifeCycles {
 
                 log.info("refresh() newNodes:");
                 newNodesConnectionStatus.stream().forEach(n -> {
-                    log.info("node: just:" + n.toString());
+                    log.info("node: " + n.toString());
                 });
 
                 final Set<ClusterNode> entries = new HashSet<>();
@@ -244,7 +249,7 @@ public class CoreClusterManager implements ClusterManager, LifeCycles {
                     log.info("Will remove node with URI " + uri.toString());
                     final ClusterNode removedNode = clients.remove(uri);
                     if (removedNode != null) {
-                        log.info("removedNode was not null");
+                        log.info("removedNode was not null, will close");
                         removed.add(Pair.of(uri, removedNode::close));
                     }
                 }
@@ -334,6 +339,7 @@ public class CoreClusterManager implements ClusterManager, LifeCycles {
     }
 
     private AsyncFuture<Void> stop() {
+        log.info("CoreClusterManager::stop() entering");
         return async.collectAndDiscard(
             clients.values().stream().map(ClusterNode::close).collect(Collectors.toList()));
     }
