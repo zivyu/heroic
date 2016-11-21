@@ -238,7 +238,7 @@ public class CoreClusterManager implements ClusterManager, LifeCycles {
                         log.info("Will remove node with URI " + uri.toString());
                         final ClusterNode removedNode = clients.remove(uri);
                         if (removedNode != null) {
-                            //log.info("removedNode was null");
+                            log.info("removedNode was not null");
                             removed.add(Pair.of(uri, removedNode::close));
                         }
 
