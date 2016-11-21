@@ -171,7 +171,7 @@ public class QueryResult {
                       " \"total/s\": " + (trace.getElapsed() == 0 ?
                                           0 : (1000000 * totalDataPoints) / trace.getElapsed()) +
                       "," +
-                      " \"trace.what\": \"" + trace.getWhat().toString() + "\"," +
+                      " \"trace-what\": \"" + trace.getWhat().toString() + "\"," +
                       " \"preAggregationSampleSize\": " + trace.getPreAggregationSampleSize() +
                       "," +
                       " \"numSeries\": " + trace.getNumSeries() + "," +
