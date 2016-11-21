@@ -88,11 +88,13 @@ public final class MaybeError<T> {
      * @return
      */
     public static <A> MaybeError<A> error(Throwable error, Object data) {
+        /*
         log.info("MaybeError:error() " + error.toString());
         StackTraceElement[] ste = Thread.currentThread().getStackTrace();
         for (StackTraceElement e : ste) {
             log.info(" stack: " + e.toString());
         }
+        */
         return new MaybeError<>(false, data, error);
     }
 

@@ -172,7 +172,7 @@ public class GrpcRpcProtocol implements RpcProtocol {
 
         @Override
         public AsyncFuture<NodeMetadata> fetchMetadata() {
-            log.info("GrpcRpcClusterNode:fetchMetadata, will request with 5s deadline");
+            //log.info("GrpcRpcClusterNode:fetchMetadata, will request with 5s deadline");
             // metadata requests are also used as health checks, used a much smaller deadline.
             return client.request(METADATA,
                 CallOptions.DEFAULT.withDeadlineAfter(5, TimeUnit.SECONDS));

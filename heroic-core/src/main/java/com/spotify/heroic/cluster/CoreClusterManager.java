@@ -224,9 +224,9 @@ public class CoreClusterManager implements ClusterManager, LifeCycles {
 
             return async.collect(nodes).lazyTransform(newNodes -> {
 
-                log.info("refresh() newNodes:");
+                //log.info("refresh() newNodes:");
                 newNodes.stream().forEach(n -> {
-                    log.info("node: just:" + n.toString());
+                    log.info("node: " + n.toString());
                 });
 
                 final Set<ClusterNode> entries = new HashSet<>();
@@ -238,7 +238,7 @@ public class CoreClusterManager implements ClusterManager, LifeCycles {
                         log.info("Will remove node with URI " + uri.toString());
                         final ClusterNode removedNode = clients.remove(uri);
                         if (removedNode != null) {
-                            log.info("removedNode was null");
+                            //log.info("removedNode was null");
                             removed.add(Pair.of(uri, removedNode::close));
                         }
 

@@ -63,7 +63,7 @@ public class GrpcRpcClient {
     public <Q, R> AsyncFuture<R> request(
         final GrpcDescriptor<Q, R> endpoint, final Q entity, final CallOptions options
     ) {
-        log.info("Will doto grpc request");
+        //log.info("Will doto grpc request");
         return channel.doto(channel -> {
             final byte[] body;
 
@@ -82,7 +82,7 @@ public class GrpcRpcClient {
             call.start(new ClientCall.Listener<byte[]>() {
                 @Override
                 public void onMessage(final byte[] message) {
-                    log.info("GrpcRpcClient::request() onMessage");
+                    //log.info("GrpcRpcClient::request() onMessage");
                     final R response;
 
                     try {
@@ -97,7 +97,7 @@ public class GrpcRpcClient {
 
                 @Override
                 public void onClose(final Status status, final Metadata trailers) {
-                    log.info("GrpcRpcClient::request() onClose: " + address.getHostName() + ":" + address.getPort());
+                    //log.info("GrpcRpcClient::request() onClose: " + address.getHostName() + ":" + address.getPort());
                     if (status.isOk()) {
                         if (!future.isDone()) {
                             future.fail(new RuntimeException("Request finished without response"));
